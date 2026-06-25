@@ -32,6 +32,7 @@ conservando todo el backend, auth, rutas y lógica de datos existentes.
 | Portal usuario | Topbar claro (no sidebar navy) |
 | shadcn/ui | Se deja en el repo hasta una limpieza final |
 | Tema por defecto | **Claro** (oscuro reservado a pantallas operativas/tótem) |
+| Backend / Prisma | **Se mantiene Prisma + Neon** durante el rediseño. La posible migración a Supabase (y el retiro de Prisma) se evalúa en una **fase posterior** con su propio spec — fuera de alcance aquí. |
 
 ## Alcance
 
