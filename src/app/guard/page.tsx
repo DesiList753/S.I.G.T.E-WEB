@@ -131,7 +131,7 @@ export default function GuardAccess() {
 
       <Card title="Identificar vehículo">
         <p className="muted" style={{ fontSize: 13, marginBottom: 14 }}>
-          Elegí el método y escaneá / ingresá el valor
+          Elige el método y escanea / ingresa el valor
         </p>
 
         <div className="row" style={{ gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
@@ -266,8 +266,8 @@ function VehicleCard({
             ))}
           </select>
           <span className="field-hint">
-            Si no elegís un bloque, el vehículo queda en{" "}
-            {defaultBlock?.name ?? "el bloque default"} y lo podés mover luego desde
+            Si no eliges un bloque, el vehículo queda en{" "}
+            {defaultBlock?.name ?? "el bloque default"} y lo puedes mover luego desde
             "Estacionamiento en vivo".
           </span>
         </div>

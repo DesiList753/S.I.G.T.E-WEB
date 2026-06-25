@@ -53,14 +53,14 @@ export default function UserQR() {
       <div>
         <h1 style={{ fontFamily: "var(--ff-display)", fontSize: 24 }}>Mi código QR de acceso</h1>
         <p className="muted" style={{ fontSize: 13 }}>
-          Generá un QR único por vehículo. Válido 5 minutos.
+          Genera un QR único por vehículo. Válido 5 minutos.
         </p>
       </div>
 
       {vehicles.length === 0 ? (
         <Card>
           <div className="muted" style={{ fontSize: 13 }}>
-            Primero registrá un vehículo en la sección{" "}
+            Primero registra un vehículo en la sección{" "}
             <span style={{ color: "var(--ink-900)", fontWeight: 600 }}>Mis vehículos</span>.
           </div>
         </Card>

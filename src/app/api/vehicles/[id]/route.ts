@@ -16,7 +16,7 @@ export const PATCH = withAuth<{ id: string }>(async (req, { session, params }) =
   if (!vehicle) return jsonError(404, "Vehículo no encontrado");
 
   if (session.role === "USER" && vehicle.ownerId !== session.sub)
-    return jsonError(403, "No podés editar este vehículo");
+    return jsonError(403, "No puedes editar este vehículo");
 
   const parsed = await parseJson(req, updateSchema);
   if (!parsed.ok) return parsed.response;
@@ -33,7 +33,7 @@ export const DELETE = withAuth<{ id: string }>(async (_req, { session, params })
   if (!vehicle) return jsonError(404, "Vehículo no encontrado");
 
   if (session.role === "USER" && vehicle.ownerId !== session.sub)
-    return jsonError(403, "No podés eliminar este vehículo");
+    return jsonError(403, "No puedes eliminar este vehículo");
 
   await prisma.vehicle.delete({ where: { id: params.id } });
   return NextResponse.json({ ok: true });

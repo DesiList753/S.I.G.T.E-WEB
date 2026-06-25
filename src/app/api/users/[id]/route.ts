@@ -26,7 +26,7 @@ export const PATCH = withAuth<{ id: string }>(
 
 export const DELETE = withAuth<{ id: string }>(
   async (_req, { session, params }) => {
-    if (params.id === session.sub) return jsonError(400, "No podés eliminar tu propio usuario");
+    if (params.id === session.sub) return jsonError(400, "No puedes eliminar tu propio usuario");
     await prisma.user.delete({ where: { id: params.id } });
     return NextResponse.json({ ok: true });
   },

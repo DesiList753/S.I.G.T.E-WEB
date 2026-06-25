@@ -79,7 +79,7 @@ export default function UserHome() {
               </span>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 600 }}>Mis vehículos</div>
-                <div className="muted" style={{ fontSize: 13 }}>Registrá o editá tus patentes autorizadas</div>
+                <div className="muted" style={{ fontSize: 13 }}>Registra o edita tus patentes autorizadas</div>
               </div>
               <I name="arrowRight" size={18} />
             </div>
