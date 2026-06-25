@@ -1,34 +1,34 @@
 import type { Metadata, Viewport } from "next";
+import { Roboto, Roboto_Condensed, Roboto_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
+const roboto = Roboto({ weight: ["400", "500", "700", "900"], subsets: ["latin"], variable: "--font-roboto" });
+const robotoCondensed = Roboto_Condensed({ weight: ["400", "500", "700"], subsets: ["latin"], variable: "--font-roboto-condensed" });
+const robotoMono = Roboto_Mono({ weight: ["400", "500", "700"], subsets: ["latin"], variable: "--font-roboto-mono" });
+
 export const metadata: Metadata = {
-  title: "S.I.G.T.E. — Sistema Inteligente de Gestión del Tránsito y Estacionamiento",
+  title: "S.I.G.T.E · UTFSM",
   description:
-    "Plataforma integral para el control vehicular, gestión de estacionamientos y fiscalización en el campus.",
+    "Sistema Inteligente de Gestión de Tránsito y Estacionamiento · Universidad Técnica Federico Santa María",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#121113",
+  themeColor: "#004B85",
   width: "device-width",
   initialScale: 1,
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" suppressHydrationWarning>
-      <body className="antialiased font-sans">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
+    <html
+      lang="es"
+      suppressHydrationWarning
+      className={`${roboto.variable} ${robotoCondensed.variable} ${robotoMono.variable}`}
+    >
+      <body className="antialiased">
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
           <TooltipProvider>{children}</TooltipProvider>
         </ThemeProvider>
       </body>
