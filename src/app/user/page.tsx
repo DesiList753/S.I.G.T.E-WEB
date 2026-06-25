@@ -2,14 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Bell, Car, QrCode, ShieldAlert, ArrowUpRight } from "lucide-react";
+import { Card, Metric } from "@/components/ui-system";
+import { I } from "@/components/Icon";
 
 type Metrics = {
   vehicles: number;
@@ -25,123 +19,73 @@ export default function UserHome() {
   }, []);
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="text-3xl font-bold tracking-tight">Bienvenido</h1>
-        <p className="text-muted-foreground text-sm">Resumen de tu actividad en el campus</p>
-      </header>
+    <div style={{ display: "grid", gap: 20 }}>
+      <div>
+        <h1 style={{ fontFamily: "var(--ff-display)", fontSize: 24 }}>Bienvenido</h1>
+        <p className="muted" style={{ fontSize: 13 }}>Resumen de tu actividad en el campus</p>
+      </div>
 
       {m && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Kpi
-            icon={<Car className="size-4" />}
-            label="Mis vehículos"
-            value={m.vehicles}
-            href="/user/vehicles"
-          />
-          <Kpi
-            icon={<ArrowUpRight className="size-4" />}
-            label="Accesos hoy"
-            value={m.accessToday}
-          />
-          <Kpi
-            icon={<ShieldAlert className="size-4" />}
-            label="Infracciones"
-            value={m.openInfractions}
-            href="/user/infractions"
-            tone={m.openInfractions > 0 ? "danger" : undefined}
-          />
-          <Kpi
-            icon={<Bell className="size-4" />}
-            label="Notificaciones"
-            value={m.unreadNotifs}
-            href="/user/notifications"
-            tone={m.unreadNotifs > 0 ? "warning" : undefined}
-          />
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12 }}>
+          <Metric label="Mis vehículos" icon="car" value={m.vehicles} />
+          <Metric label="Accesos hoy" icon="arrowRight" value={m.accessToday} />
+          <Metric label="Infracciones" icon="shieldAlert" value={m.openInfractions} />
+          <Metric label="Notificaciones" icon="bell" value={m.unreadNotifs} />
         </div>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Link href="/user/qr">
-          <Card className="transition-all hover:border-primary/50 hover:bg-accent/30">
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="size-10 rounded-md bg-primary/10 text-primary grid place-items-center">
-                  <QrCode className="size-5" />
+      <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
+        <Link href="/user/qr" style={{ textDecoration: "none", color: "inherit" }}>
+          <Card>
+            <div className="row" style={{ gap: 12, alignItems: "center" }}>
+              <span
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 8,
+                  display: "grid",
+                  placeItems: "center",
+                  background: "var(--accent-050)",
+                  color: "var(--usm-azul)",
+                }}
+              >
+                <I name="qr" size={20} />
+              </span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600 }}>Generar mi QR</div>
+                <div className="muted" style={{ fontSize: 13 }}>
+                  Código válido por 5 minutos para presentar al guardia
                 </div>
-                <div className="flex-1">
-                  <CardTitle>Generar mi QR</CardTitle>
-                  <CardDescription>
-                    Código válido por 5 minutos para presentar al guardia
-                  </CardDescription>
-                </div>
-                <ArrowUpRight className="size-4 text-muted-foreground" />
               </div>
-            </CardHeader>
+              <I name="arrowRight" size={18} />
+            </div>
           </Card>
         </Link>
-        <Link href="/user/vehicles">
-          <Card className="transition-all hover:border-primary/50 hover:bg-accent/30">
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="size-10 rounded-md bg-primary/10 text-primary grid place-items-center">
-                  <Car className="size-5" />
-                </div>
-                <div className="flex-1">
-                  <CardTitle>Administrar vehículos</CardTitle>
-                  <CardDescription>Registrá o editá tus patentes autorizadas</CardDescription>
-                </div>
-                <ArrowUpRight className="size-4 text-muted-foreground" />
+        <Link href="/user/vehicles" style={{ textDecoration: "none", color: "inherit" }}>
+          <Card>
+            <div className="row" style={{ gap: 12, alignItems: "center" }}>
+              <span
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 8,
+                  display: "grid",
+                  placeItems: "center",
+                  background: "var(--accent-050)",
+                  color: "var(--usm-azul)",
+                }}
+              >
+                <I name="car" size={20} />
+              </span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600 }}>Mis vehículos</div>
+                <div className="muted" style={{ fontSize: 13 }}>Registrá o editá tus patentes autorizadas</div>
               </div>
-            </CardHeader>
+              <I name="arrowRight" size={18} />
+            </div>
           </Card>
         </Link>
       </div>
     </div>
   );
-}
-
-function Kpi({
-  icon,
-  label,
-  value,
-  href,
-  tone,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  href?: string;
-  tone?: "danger" | "warning";
-}) {
-  const body = (
-    <Card
-      className={
-        tone === "danger"
-          ? "border-destructive/30"
-          : tone === "warning"
-          ? "border-warning/30"
-          : ""
-      }
-    >
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between text-muted-foreground">
-          <span className="text-[11px] uppercase tracking-wide">{label}</span>
-          <span
-            className={
-              tone === "danger"
-                ? "text-destructive"
-                : tone === "warning"
-                ? "text-[hsl(var(--warning))]"
-                : "text-primary"
-            }
-          >
-            {icon}
-          </span>
-        </div>
-        <div className="text-3xl font-bold tabular-nums">{value}</div>
-      </CardHeader>
-    </Card>
-  );
-  return href ? <Link href={href}>{body}</Link> : body;
 }
