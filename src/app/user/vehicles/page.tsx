@@ -2,18 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Car, MapPin, Plus, ShieldCheck, ShieldX, Trash2 } from "lucide-react";
+import { Card, Modal, Plate, Badge } from "@/components/ui-system";
+import { I } from "@/components/Icon";
 
 type Vehicle = {
   id: string;
@@ -28,6 +18,7 @@ type Vehicle = {
 export default function UserVehicles() {
   const [items, setItems] = useState<Vehicle[]>([]);
   const [form, setForm] = useState({ plate: "", make: "", model: "", color: "" });
+  const [open, setOpen] = useState(false);
 
   async function load() {
     const r = await fetch("/api/vehicles").then((r) => r.json());
@@ -53,6 +44,7 @@ export default function UserVehicles() {
     if (!r.ok) return toast.error(data.error ?? "Error");
     toast.success("Vehículo registrado");
     setForm({ plate: "", make: "", model: "", color: "" });
+    setOpen(false);
     load();
   }
 
@@ -65,106 +57,102 @@ export default function UserVehicles() {
   }
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="text-3xl font-bold tracking-tight">Mis vehículos</h1>
-        <p className="text-muted-foreground text-sm">
-          Patentes autorizadas para ingreso al campus
-        </p>
-      </header>
+    <div style={{ display: "grid", gap: 20 }}>
+      <div className="row between" style={{ alignItems: "flex-start" }}>
+        <div>
+          <h1 style={{ fontFamily: "var(--ff-display)", fontSize: 24 }}>Mis vehículos</h1>
+          <p className="muted" style={{ fontSize: 13 }}>
+            Patentes autorizadas para ingreso al campus
+          </p>
+        </div>
+        <button className="btn primary" onClick={() => setOpen(true)}>
+          <I name="plus" size={16} />
+          Registrar vehículo
+        </button>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Registrar vehículo</CardTitle>
-          <CardDescription>Agregá los datos de tu patente</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={create} className="grid gap-4 md:grid-cols-4">
-            <div className="space-y-2">
-              <Label htmlFor="p">Patente *</Label>
-              <Input
+      <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
+        {items.map((v) => (
+          <Card key={v.id}>
+            <div className="row between" style={{ alignItems: "flex-start", gap: 10 }}>
+              <div className="row" style={{ gap: 12, alignItems: "center" }}>
+                <Plate size="lg">{v.plate}</Plate>
+              </div>
+              <button className="btn danger icon" title="Eliminar" onClick={() => remove(v)}>
+                <I name="trash" size={16} />
+              </button>
+            </div>
+            <div className="muted" style={{ fontSize: 13, marginTop: 8 }}>
+              {[v.make, v.model].filter(Boolean).join(" ") || "Sin datos"}
+              {v.color ? ` · ${v.color}` : ""}
+            </div>
+            <div className="row" style={{ gap: 6, marginTop: 12, flexWrap: "wrap" }}>
+              <Badge kind={v.authorized ? "go" : "no"}>
+                {v.authorized ? "Autorizado" : "Bloqueado"}
+              </Badge>
+              {v.currentBlock && <Badge kind="info">Dentro: {v.currentBlock.name}</Badge>}
+            </div>
+          </Card>
+        ))}
+        {items.length === 0 && (
+          <p className="muted">Aún no registraste vehículos.</p>
+        )}
+      </div>
+
+      {open && (
+        <Modal title="Registrar vehículo" onClose={() => setOpen(false)}>
+          <form onSubmit={create} className="col" style={{ gap: 14 }}>
+            <div className="field">
+              <label className="field-lbl" htmlFor="p">Patente *</label>
+              <input
                 id="p"
                 required
-                className="font-mono uppercase"
+                className="input mono"
+                style={{ textTransform: "uppercase" }}
                 placeholder="AABB12"
                 value={form.plate}
                 onChange={(e) => setForm({ ...form, plate: e.target.value })}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="mk">Marca</Label>
-              <Input
+            <div className="field">
+              <label className="field-lbl" htmlFor="mk">Marca</label>
+              <input
                 id="mk"
+                className="input"
                 value={form.make}
                 onChange={(e) => setForm({ ...form, make: e.target.value })}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="md">Modelo</Label>
-              <Input
+            <div className="field">
+              <label className="field-lbl" htmlFor="md">Modelo</label>
+              <input
                 id="md"
+                className="input"
                 value={form.model}
                 onChange={(e) => setForm({ ...form, model: e.target.value })}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="cl">Color</Label>
-              <Input
+            <div className="field">
+              <label className="field-lbl" htmlFor="cl">Color</label>
+              <input
                 id="cl"
+                className="input"
                 value={form.color}
                 onChange={(e) => setForm({ ...form, color: e.target.value })}
               />
             </div>
-            <div className="md:col-span-4">
-              <Button type="submit">
-                <Plus />
+            <div className="row between">
+              <button type="button" className="btn ghost" onClick={() => setOpen(false)}>
+                Cancelar
+              </button>
+              <button type="submit" className="btn primary">
+                <I name="plus" size={16} />
                 Registrar vehículo
-              </Button>
+              </button>
             </div>
           </form>
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        {items.map((v) => (
-          <Card key={v.id}>
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-3">
-                  <div className="size-10 rounded-md bg-primary/10 text-primary grid place-items-center">
-                    <Car className="size-5" />
-                  </div>
-                  <div>
-                    <p className="font-mono text-xl font-bold tracking-tight">{v.plate}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {[v.make, v.model].filter(Boolean).join(" ") || "Sin datos"}
-                      {v.color ? ` · ${v.color}` : ""}
-                    </p>
-                  </div>
-                </div>
-                <Button variant="ghost" size="icon-sm" onClick={() => remove(v)}>
-                  <Trash2 className="text-destructive" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-1.5">
-              <Badge variant={v.authorized ? "success" : "destructive"} className="gap-1">
-                {v.authorized ? <ShieldCheck className="size-3" /> : <ShieldX className="size-3" />}
-                {v.authorized ? "Autorizado" : "Bloqueado"}
-              </Badge>
-              {v.currentBlock && (
-                <Badge variant="secondary" className="gap-1">
-                  <MapPin className="size-3" />
-                  Dentro: {v.currentBlock.name}
-                </Badge>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-        {items.length === 0 && (
-          <p className="text-muted-foreground">Aún no registraste vehículos.</p>
-        )}
-      </div>
+        </Modal>
+      )}
     </div>
   );
 }
