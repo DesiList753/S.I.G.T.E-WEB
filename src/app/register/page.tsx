@@ -3,17 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { AlertCircle, Loader2, UserPlus } from "lucide-react";
+import { I } from "@/components/Icon";
+import { Brand, Card } from "@/components/ui-system";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -48,88 +39,77 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="min-h-screen grid place-items-center p-6 bg-background grain">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="size-10 rounded-md bg-primary text-primary-foreground grid place-items-center font-bold">
-              S
-            </div>
-            <div>
-              <CardTitle>Crear cuenta</CardTitle>
-              <CardDescription>Registro como usuario del campus</CardDescription>
-            </div>
+    <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "var(--bg)", padding: 24 }}>
+      <Card style={{ width: "100%", maxWidth: 420 }}>
+        <div style={{ display: "inline-flex", marginBottom: 20 }}>
+          <Brand />
+        </div>
+        <h1 style={{ fontSize: 22, marginBottom: 4 }}>Crear cuenta</h1>
+        <p style={{ color: "var(--ink-500)", fontSize: 13.5, marginBottom: 20 }}>
+          Registro como usuario del campus.
+        </p>
+
+        <form onSubmit={submit} className="col" style={{ gap: 14 }}>
+          <div className="field">
+            <label className="field-lbl">Nombre completo</label>
+            <input
+              className="input"
+              required
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+            />
           </div>
-        </CardHeader>
-        <form onSubmit={submit}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nombre completo</Label>
-              <Input
-                id="name"
-                required
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="uid">Credencial universitaria</Label>
-              <Input
-                id="uid"
-                placeholder="USR-2026-123"
-                value={form.universityId}
-                onChange={(e) => setForm({ ...form, universityId: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                required
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Contraseña</Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                minLength={6}
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-              />
-            </div>
+          <div className="field">
+            <label className="field-lbl">Credencial universitaria</label>
+            <input
+              className="input"
+              placeholder="USR-2026-123"
+              value={form.universityId}
+              onChange={(e) => setForm({ ...form, universityId: e.target.value })}
+            />
+          </div>
+          <div className="field">
+            <label className="field-lbl">Correo</label>
+            <input
+              className="input"
+              type="email"
+              required
+              placeholder="nombre.apellido@usm.cl"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+            />
+          </div>
+          <div className="field">
+            <label className="field-lbl">Contraseña</label>
+            <input
+              className="input"
+              type="password"
+              required
+              minLength={6}
+              placeholder="••••••••"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+            />
+          </div>
 
-            {error && (
-              <div className="flex gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                <AlertCircle className="size-4 shrink-0 mt-0.5" />
-                <span>{error}</span>
-              </div>
-            )}
+          {error && (
+            <div className="field-err">
+              <I name="alert" size={14} /> {error}
+            </div>
+          )}
 
-            <Button type="submit" disabled={loading} className="w-full">
-              {loading ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <>
-                  <UserPlus />
-                  Registrarme
-                </>
-              )}
-            </Button>
+          <button className="btn primary block" type="submit" disabled={loading}>
+            <I name="userCheck" size={18} /> {loading ? "Creando…" : "Registrarme"}
+          </button>
 
-            <p className="text-xs text-muted-foreground text-center">
-              ¿Ya tenés cuenta?{" "}
-              <Link href="/login" className="text-primary hover:underline">
-                Iniciá sesión
-              </Link>
-            </p>
-          </CardContent>
+          <p style={{ fontSize: 13, color: "var(--ink-500)", textAlign: "center", margin: 0 }}>
+            ¿Ya tienes cuenta?{" "}
+            <Link href="/login" style={{ color: "var(--accent)", fontWeight: 600 }}>
+              Inicia sesión
+            </Link>
+          </p>
         </form>
       </Card>
-    </main>
+    </div>
   );
 }
