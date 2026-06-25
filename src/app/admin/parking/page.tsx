@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Card, Modal, Plate, Badge, LotGrid } from "@/components/ui-system";
 import { I } from "@/components/Icon";
@@ -41,6 +41,8 @@ export default function AdminParking() {
   const [form, setForm] = useState({ name: "", description: "", capacity: 10 });
   const [editingName, setEditingName] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
+  const savingRef = useRef(false);
+  const cancelRef = useRef(false);
 
   const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -140,16 +142,24 @@ export default function AdminParking() {
   }
 
   async function rename(b: Block) {
+    if (cancelRef.current) { cancelRef.current = false; return; }   // Escape cancelled
+    if (savingRef.current) return;                                   // already saving (blur after Enter)
     if (!newName.trim() || newName === b.name) { setEditingName(null); return; }
-    const r = await fetch(`/api/parking/${b.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newName.trim() }),
-    });
-    if (!r.ok) { const e = await r.json(); toast.error(e.error ?? "Error"); }
-    else toast.success("Nombre actualizado");
-    setEditingName(null);
-    load();
+    savingRef.current = true;
+    try {
+      const r = await fetch(`/api/parking/${b.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newName.trim() }),
+      });
+      if (!r.ok) { const e = await r.json(); toast.error(e.error ?? "Error"); return; }  // keep editing open
+      toast.success("Nombre actualizado");
+      setEditingName(null);
+      load();
+    } finally {
+      // clear after the blur that follows unmount has had a chance to no-op
+      setTimeout(() => { savingRef.current = false; }, 0);
+    }
   }
 
   async function remove(b: Block) {
@@ -272,8 +282,8 @@ export default function AdminParking() {
                           onChange={(e) => setNewName(e.target.value)}
                           onBlur={() => rename(b)}
                           onKeyDown={(e) => {
-                            if (e.key === "Enter") rename(b);
-                            if (e.key === "Escape") setEditingName(null);
+                            if (e.key === "Enter") { e.preventDefault(); rename(b); }
+                            if (e.key === "Escape") { cancelRef.current = true; setEditingName(null); }
                           }}
                           onClick={(e) => e.stopPropagation()}
                         />
