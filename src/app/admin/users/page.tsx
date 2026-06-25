@@ -2,40 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Plus, UserX, UserCheck, Trash2 } from "lucide-react";
+import { Card, Badge, Modal } from "@/components/ui-system";
+import { I } from "@/components/Icon";
 
 type User = {
   id: string;
@@ -45,15 +13,6 @@ type User = {
   universityId: string | null;
   active: boolean;
   _count: { vehicles: number };
-};
-
-const roleVariant: Record<
-  User["role"],
-  "default" | "secondary" | "outline"
-> = {
-  ADMIN: "default",
-  GUARD: "secondary",
-  USER: "outline",
 };
 
 export default function AdminUsers() {
@@ -118,173 +77,191 @@ export default function AdminUsers() {
     load();
   }
 
-  return (
-    <div className="space-y-6">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Usuarios</h1>
-          <p className="text-muted-foreground text-sm">Gestión de perfiles y roles del sistema</p>
-        </div>
-        <Button onClick={() => setShowNew(!showNew)}>
-          <Plus />
-          {showNew ? "Cancelar" : "Nuevo usuario"}
-        </Button>
-      </header>
+  function initials(name: string) {
+    return name
+      .split(" ")
+      .map((w) => w[0])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
+  }
 
-      {showNew && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Crear usuario</CardTitle>
-            <CardDescription>Completá los datos del nuevo perfil</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={create} className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nombre</Label>
-                <Input
-                  id="name"
-                  required
-                  value={newUser.name}
-                  onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  required
-                  value={newUser.email}
-                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="pw">Contraseña</Label>
-                <Input
-                  id="pw"
-                  type="password"
-                  required
-                  minLength={6}
-                  value={newUser.password}
-                  onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="uid">Credencial U</Label>
-                <Input
-                  id="uid"
-                  value={newUser.universityId}
-                  onChange={(e) => setNewUser({ ...newUser, universityId: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label>Rol</Label>
-                <Select
-                  value={newUser.role}
-                  onValueChange={(v: User["role"]) => setNewUser({ ...newUser, role: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="USER">Usuario</SelectItem>
-                    <SelectItem value="GUARD">Guardia</SelectItem>
-                    <SelectItem value="ADMIN">Administrador</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="md:col-span-2">
-                <Button type="submit">Crear usuario</Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
+  return (
+    <div style={{ padding: 24 }}>
+      <div className="row between" style={{ marginBottom: 20 }}>
+        <div>
+          <h1 style={{ fontFamily: "var(--ff-display)", fontSize: 24 }}>Usuarios</h1>
+          <p className="muted" style={{ fontSize: 13 }}>
+            Gestión de perfiles y roles del sistema
+          </p>
+        </div>
+        <button className="btn primary" onClick={() => setShowNew(true)}>
+          <I name="plus" size={18} />
+          Nuevo usuario
+        </button>
+      </div>
 
       <Card>
-        <CardContent className="pt-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Credencial</TableHead>
-                <TableHead>Rol</TableHead>
-                <TableHead className="text-center">Autos</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
-                    Cargando…
-                  </TableCell>
-                </TableRow>
-              ) : (
-                users.map((u) => (
-                  <TableRow key={u.id}>
-                    <TableCell className="font-medium">{u.name}</TableCell>
-                    <TableCell className="text-muted-foreground">{u.email}</TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground">
-                      {u.universityId ?? "—"}
-                    </TableCell>
-                    <TableCell>
-                      <Select
-                        value={u.role}
-                        onValueChange={(v: User["role"]) => patchUser(u.id, { role: v })}
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Credencial</th>
+              <th>Rol</th>
+              <th style={{ textAlign: "center" }}>Autos</th>
+              <th>Estado</th>
+              <th style={{ textAlign: "right" }}>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={7} style={{ textAlign: "center", padding: 24 }} className="muted">
+                  Cargando…
+                </td>
+              </tr>
+            ) : users.length === 0 ? (
+              <tr>
+                <td colSpan={7} style={{ textAlign: "center", padding: 24 }} className="muted">
+                  Sin usuarios
+                </td>
+              </tr>
+            ) : (
+              users.map((u) => (
+                <tr key={u.id}>
+                  <td>
+                    <span className="row" style={{ gap: 10 }}>
+                      <span className="avatar sm">{initials(u.name)}</span>
+                      <span style={{ fontWeight: 600 }}>{u.name}</span>
+                    </span>
+                  </td>
+                  <td className="muted">{u.email}</td>
+                  <td className="mono" style={{ fontSize: 12 }}>
+                    {u.universityId ?? "—"}
+                  </td>
+                  <td>
+                    <select
+                      className="select"
+                      style={{ minWidth: 130 }}
+                      value={u.role}
+                      onChange={(e) => patchUser(u.id, { role: e.target.value as User["role"] })}
+                    >
+                      <option value="USER">Usuario</option>
+                      <option value="GUARD">Guardia</option>
+                      <option value="ADMIN">Administrador</option>
+                    </select>
+                  </td>
+                  <td style={{ textAlign: "center" }} className="mono">
+                    {u._count.vehicles}
+                  </td>
+                  <td>
+                    <Badge kind={u.active ? "go" : "neutral"}>
+                      {u.active ? "Activo" : "Inactivo"}
+                    </Badge>
+                  </td>
+                  <td>
+                    <span className="row" style={{ gap: 6, justifyContent: "flex-end" }}>
+                      <button
+                        className="btn ghost icon"
+                        title={u.active ? "Desactivar" : "Activar"}
+                        onClick={() => patchUser(u.id, { active: !u.active })}
                       >
-                        <SelectTrigger size="sm" className="w-[110px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="USER">USER</SelectItem>
-                          <SelectItem value="GUARD">GUARD</SelectItem>
-                          <SelectItem value="ADMIN">ADMIN</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell className="text-center tabular-nums">
-                      {u._count.vehicles}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={u.active ? "success" : "outline"}>
-                        {u.active ? "Activo" : "Inactivo"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon-sm">
-                            <MoreHorizontal />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => patchUser(u.id, { active: !u.active })}
-                          >
-                            {u.active ? <UserX /> : <UserCheck />}
-                            {u.active ? "Desactivar" : "Activar"}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            variant="destructive"
-                            onClick={() => remove(u)}
-                          >
-                            <Trash2 />
-                            Eliminar
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
+                        <I name={u.active ? "x" : "check"} size={16} />
+                      </button>
+                      <button
+                        className="btn danger icon"
+                        title="Eliminar"
+                        onClick={() => remove(u)}
+                      >
+                        <I name="trash" size={16} />
+                      </button>
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </Card>
+
+      {showNew && (
+        <Modal title="Crear usuario" onClose={() => setShowNew(false)} width={520}>
+          <form onSubmit={create} style={{ display: "grid", gap: 14, marginTop: 14 }}>
+            <div className="field">
+              <label className="field-lbl" htmlFor="name">
+                Nombre
+              </label>
+              <input
+                id="name"
+                className="input"
+                required
+                value={newUser.name}
+                onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+              />
+            </div>
+            <div className="field">
+              <label className="field-lbl" htmlFor="email">
+                Email
+              </label>
+              <input
+                id="email"
+                className="input"
+                type="email"
+                required
+                value={newUser.email}
+                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+              />
+            </div>
+            <div className="field">
+              <label className="field-lbl" htmlFor="pw">
+                Contraseña
+              </label>
+              <input
+                id="pw"
+                className="input"
+                type="password"
+                required
+                minLength={6}
+                value={newUser.password}
+                onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+              />
+            </div>
+            <div className="field">
+              <label className="field-lbl" htmlFor="uid">
+                Credencial U
+              </label>
+              <input
+                id="uid"
+                className="input"
+                value={newUser.universityId}
+                onChange={(e) => setNewUser({ ...newUser, universityId: e.target.value })}
+              />
+            </div>
+            <div className="field">
+              <label className="field-lbl">Rol</label>
+              <select
+                className="select"
+                value={newUser.role}
+                onChange={(e) => setNewUser({ ...newUser, role: e.target.value as User["role"] })}
+              >
+                <option value="USER">Usuario</option>
+                <option value="GUARD">Guardia</option>
+                <option value="ADMIN">Administrador</option>
+              </select>
+            </div>
+            <div className="row" style={{ justifyContent: "flex-end", gap: 8, marginTop: 4 }}>
+              <button type="button" className="btn ghost" onClick={() => setShowNew(false)}>
+                Cancelar
+              </button>
+              <button type="submit" className="btn primary">
+                Crear usuario
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 }
