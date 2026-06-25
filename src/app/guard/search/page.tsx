@@ -1,26 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import {
-  Car,
-  Database,
-  Eye,
-  MapPin,
-  Search,
-  User as UserIcon,
-} from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Card, Plate, Badge } from "@/components/ui-system";
+import { I } from "@/components/Icon";
 
 type Vehicle = {
   id: string;
@@ -39,17 +22,32 @@ type Vehicle = {
   currentBlock: { id: string; name: string } | null;
 };
 
-export default function GuardSearch() {
+function roleChip(role: string): string {
+  const r = role.toUpperCase();
+  if (r === "ADMIN") return "admin";
+  if (r === "GUARD") return "guardia";
+  return "funcionario";
+}
+
+function GuardSearchInner() {
+  const sp = useSearchParams();
   const [scope, setScope] = useState<"inside" | "all">("inside");
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(sp.get("q") ?? "");
   const [results, setResults] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // El topbar de PanelShell empuja /guard/search?q=...; reflejarlo en el input.
+  useEffect(() => {
+    const urlQ = sp.get("q");
+    if (urlQ !== null) setQ(urlQ);
+  }, [sp]);
 
   useEffect(() => {
     const t = setTimeout(() => {
       run();
     }, 250);
     return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, scope]);
 
   async function run() {
@@ -65,120 +63,127 @@ export default function GuardSearch() {
     }
   }
 
+  const SCOPES: { id: typeof scope; label: string; icon: string }[] = [
+    { id: "inside", label: "En el estacionamiento ahora", icon: "eye" },
+    { id: "all", label: "Todos los registrados", icon: "list" },
+  ];
+
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="text-3xl font-bold tracking-tight">Buscar vehículos</h1>
-        <p className="text-muted-foreground text-sm">
+    <div style={{ padding: 24 }}>
+      <div style={{ marginBottom: 20 }}>
+        <h1 style={{ fontFamily: "var(--ff-display)", fontSize: 24 }}>Buscar vehículos</h1>
+        <p className="muted" style={{ fontSize: 13 }}>
           Por patente, nombre del usuario, email o credencial universitaria
         </p>
-      </header>
+      </div>
 
-      <Card>
-        <CardContent className="pt-6 space-y-4">
-          <Tabs value={scope} onValueChange={(v) => setScope(v as typeof scope)}>
-            <TabsList className="grid w-full grid-cols-2 md:w-fit">
-              <TabsTrigger value="inside">
-                <Eye />
-                En el estacionamiento ahora
-              </TabsTrigger>
-              <TabsTrigger value="all">
-                <Database />
-                Todos los registrados
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+      <Card style={{ marginBottom: 16 }}>
+        <div className="row" style={{ gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+          {SCOPES.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              className={"btn " + (scope === s.id ? "primary" : "ghost")}
+              onClick={() => setScope(s.id)}
+            >
+              <I name={s.icon} size={16} />
+              {s.label}
+            </button>
+          ))}
+        </div>
 
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input
-              autoFocus
-              className="pl-9"
-              placeholder={
-                scope === "inside"
-                  ? "Patente o nombre del dueño..."
-                  : "Buscar en toda la base..."
-              }
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
-          </div>
-        </CardContent>
+        <div className="searchbox">
+          <I name="search" size={17} />
+          <input
+            autoFocus
+            className="input"
+            placeholder={
+              scope === "inside"
+                ? "Patente o nombre del dueño..."
+                : "Buscar en toda la base..."
+            }
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+        </div>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {loading ? "Buscando..." : `${results.length} resultado${results.length === 1 ? "" : "s"}`}
-          </CardTitle>
-          <CardDescription>
-            {scope === "inside"
-              ? "Vehículos actualmente dentro del campus"
-              : "Cualquier patente del sistema"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {results.length === 0 && !loading ? (
-            <p className="text-center py-8 text-muted-foreground">
-              {q ? "Sin coincidencias" : "Escribí algo para buscar…"}
-            </p>
-          ) : (
-            <div className="grid gap-3 md:grid-cols-2">
+      <Card
+        title={loading ? "Buscando..." : `${results.length} resultado${results.length === 1 ? "" : "s"}`}
+      >
+        <p className="muted" style={{ fontSize: 13, marginBottom: 12 }}>
+          {scope === "inside"
+            ? "Vehículos actualmente dentro del campus"
+            : "Cualquier patente del sistema"}
+        </p>
+        {results.length === 0 && !loading ? (
+          <p className="muted" style={{ textAlign: "center", padding: 32 }}>
+            {q ? "Sin coincidencias" : "Escribí algo para buscar…"}
+          </p>
+        ) : (
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Patente</th>
+                <th>Vehículo</th>
+                <th>Propietario</th>
+                <th>Rol</th>
+                <th style={{ textAlign: "right" }}>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
               {results.map((v) => (
-                <ResultCard key={v.id} v={v} />
+                <tr key={v.id}>
+                  <td>
+                    <Plate size="sm">{v.plate}</Plate>
+                  </td>
+                  <td className="muted" style={{ fontSize: 12.5 }}>
+                    {[v.make, v.model].filter(Boolean).join(" ") || "Sin datos"}
+                    {v.color ? ` · ${v.color}` : ""}
+                  </td>
+                  <td>
+                    <div className="row" style={{ gap: 8, alignItems: "center" }}>
+                      <span className="avatar sm">
+                        {v.owner.name.slice(0, 1).toUpperCase()}
+                      </span>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontWeight: 600 }}>{v.owner.name}</div>
+                        <div className="muted" style={{ fontSize: 12 }}>
+                          {v.owner.email}
+                          {v.owner.universityId && ` · ${v.owner.universityId}`}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span className={"chip-role " + roleChip(v.owner.role)}>{v.owner.role}</span>
+                  </td>
+                  <td style={{ textAlign: "right" }}>
+                    <div className="col" style={{ gap: 4, alignItems: "flex-end" }}>
+                      <Badge kind={v.authorized ? "go" : "no"}>
+                        {v.authorized ? "Autorizado" : "Bloqueado"}
+                      </Badge>
+                      {v.currentBlock ? (
+                        <Badge kind="info">{v.currentBlock.name}</Badge>
+                      ) : (
+                        <span className="muted" style={{ fontSize: 11 }}>Fuera del campus</span>
+                      )}
+                    </div>
+                  </td>
+                </tr>
               ))}
-            </div>
-          )}
-        </CardContent>
+            </tbody>
+          </table>
+        )}
       </Card>
     </div>
   );
 }
 
-function ResultCard({ v }: { v: Vehicle }) {
+export default function GuardSearch() {
   return (
-    <div className="rounded-lg border bg-card p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="size-10 rounded-md bg-primary/10 text-primary grid place-items-center">
-            <Car className="size-5" />
-          </div>
-          <div>
-            <p className="font-mono font-bold text-lg">{v.plate}</p>
-            <p className="text-xs text-muted-foreground">
-              {[v.make, v.model].filter(Boolean).join(" ") || "Sin datos"}
-              {v.color ? ` · ${v.color}` : ""}
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-col items-end gap-1">
-          <Badge variant={v.authorized ? "success" : "destructive"} className="text-[10px]">
-            {v.authorized ? "Autorizado" : "Bloqueado"}
-          </Badge>
-          {v.currentBlock ? (
-            <Badge variant="secondary" className="text-[10px] gap-1">
-              <MapPin className="size-3" />
-              {v.currentBlock.name}
-            </Badge>
-          ) : (
-            <span className="text-[10px] text-muted-foreground">Fuera del campus</span>
-          )}
-        </div>
-      </div>
-      <Separator />
-      <div className="flex items-center gap-2">
-        <UserIcon className="size-3.5 text-muted-foreground shrink-0" />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{v.owner.name}</p>
-          <p className="text-xs text-muted-foreground truncate">
-            {v.owner.email}
-            {v.owner.universityId && ` · ${v.owner.universityId}`}
-          </p>
-        </div>
-        <Badge variant="outline" className="text-[10px]">
-          {v.owner.role}
-        </Badge>
-      </div>
-    </div>
+    <Suspense fallback={<p className="muted" style={{ padding: 24 }}>Cargando…</p>}>
+      <GuardSearchInner />
+    </Suspense>
   );
 }
