@@ -62,8 +62,7 @@ export default async function Home() {
           Control de acceso vehicular, <span className="accent">en un solo lugar</span>.
         </h1>
         <p className={s.lead}>
-          Sistema Inteligente de Gestión de Tránsito y Estacionamiento de la Universidad Técnica Federico Santa María.
-          Administración y guardia gestionan el campus desde el panel; la comunidad accede con su cuenta institucional.
+          Sistema Inteligente de Gestión de Tránsito y Estacionamiento — Universidad Técnica Federico Santa María.
         </p>
         <div className={s.actions}>
           <Link href="/login" className="btn primary lg">

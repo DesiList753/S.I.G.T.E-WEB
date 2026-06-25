@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode } from "react";
 import { I } from "@/components/Icon";
 import { Brand } from "@/components/ui-system";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export interface PortalTab { href: string; label: string; icon: string; }
 
@@ -26,6 +27,7 @@ export function PortalShell({ tabs, userName, children }: { tabs: PortalTab[]; u
         <div style={{ maxWidth: 920, margin: "0 auto", padding: "0 24px", height: 60, display: "flex", alignItems: "center", gap: 16 }}>
           <Link href="/user" style={{ color: "var(--usm-azul)" }}><Brand /></Link>
           <div style={{ flex: 1 }} />
+          <ThemeToggle />
           <span className="avatar">{ini || "…"}</span>
           <button className="btn ghost icon" onClick={logout} title="Cerrar sesión"><I name="logout" size={18} /></button>
         </div>

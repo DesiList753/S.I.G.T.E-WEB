@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { I } from "@/components/Icon";
 import { Brand } from "@/components/ui-system";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export interface PanelNavItem { href: string; label: string; icon: string; }
 export interface PanelNavGroup { grp: string; items: PanelNavItem[]; }
@@ -64,6 +65,7 @@ function TopBar({ title, subtitle, userName, userRole, searchHref }: { title: st
         <I name="search" size={17} />
         <input className="input" placeholder="Buscar patente, RUT o persona…" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && q.trim()) router.push(`${searchHref}?q=${encodeURIComponent(q.trim())}`); }} aria-label="Buscar" />
       </div>
+      <ThemeToggle />
       <div style={{ display: "flex", alignItems: "center", gap: 9, paddingLeft: 6, borderLeft: "1px solid var(--line)" }}>
         <span className="avatar">{ini || "…"}</span>
         <div style={{ lineHeight: 1.15 }}>
