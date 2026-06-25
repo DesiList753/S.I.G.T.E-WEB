@@ -17,14 +17,20 @@ export function Badge({ kind, children }: { kind: Estado | "info"; children?: Re
   );
 }
 
-/* Marca / lockup (slot para escudo oficial USM) */
+/* Marca / lockup con el escudo oficial USM (uso autorizado por el patrocinador) */
 export function Brand({ light }: { light?: boolean }) {
   return (
     <div className="brand" style={{ color: light ? "#fff" : "var(--usm-azul)" }}>
-      <span className="crest">
-        ESCUDO
-        <br />
-        USM
+      <span
+        className="crest"
+        style={{ background: "#fff", border: "none", padding: 3, opacity: 1, overflow: "hidden" }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/escudo-usm.png"
+          alt="Escudo Universidad Técnica Federico Santa María"
+          style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+        />
       </span>
       <span className="sep" />
       <div>

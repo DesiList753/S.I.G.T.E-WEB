@@ -195,7 +195,7 @@ code,.mono{font-family:var(--ff-mono)}
 .field-hint{font-size:11.5px;color:var(--ink-400)}
 .searchbox{position:relative;display:flex;align-items:center}
 .searchbox .input{padding-left:38px}
-.searchbox svg{position:absolute;left:12px;width:17px;height:17px;color:var(--ink-400);pointer-events:none}
+.searchbox svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--ink-400);pointer-events:none}
 
 /* Switch */
 .switch{position:relative;width:42px;height:24px;flex:none;cursor:pointer;display:inline-block}

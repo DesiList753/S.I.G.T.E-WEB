@@ -11,6 +11,12 @@ export interface PanelNavGroup { grp: string; items: PanelNavItem[]; }
 function Sidebar({ groups }: { groups: PanelNavGroup[] }) {
   const pathname = usePathname();
   const router = useRouter();
+  // Ítem activo = el href más específico (más largo) que coincide con la ruta;
+  // evita que "/admin" (Dashboard) quede marcado en todas las subrutas.
+  const activeHref = groups
+    .flatMap((g) => g.items)
+    .filter((it) => pathname === it.href || pathname.startsWith(it.href + "/"))
+    .sort((a, b) => b.href.length - a.href.length)[0]?.href;
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
     router.replace("/login");
@@ -25,7 +31,7 @@ function Sidebar({ groups }: { groups: PanelNavGroup[] }) {
           <div key={g.grp} style={{ marginBottom: 18 }}>
             <div style={{ fontFamily: "var(--ff-display)", fontSize: 10.5, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "rgba(255,255,255,.45)", padding: "0 10px 7px" }}>{g.grp}</div>
             {g.items.map((it) => {
-              const on = pathname === it.href || pathname.startsWith(it.href + "/");
+              const on = it.href === activeHref;
               return (
                 <Link key={it.href} href={it.href} style={{ display: "flex", alignItems: "center", gap: 11, padding: "9px 10px", marginBottom: 2, borderRadius: 8, background: on ? "var(--usm-azul)" : "transparent", color: on ? "#fff" : "rgba(255,255,255,.78)", fontFamily: "var(--ff-body)", fontSize: 13.5, fontWeight: on ? 600 : 400, boxShadow: on ? "inset 3px 0 0 var(--usm-amarillo)" : "none" }}>
                   <I name={it.icon} size={18} stroke={1.9} />
