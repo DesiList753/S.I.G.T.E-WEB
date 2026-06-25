@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, Suspense } from "react";
 import { I } from "@/components/Icon";
 import { Brand } from "@/components/ui-system";
+import st from "./login.module.css";
 
 const DEMO = [
   { role: "Admin", email: "admin@sigte.cl", pw: "admin123" },
@@ -53,8 +54,9 @@ function LoginForm() {
   return (
     <form onSubmit={submit} className="col" style={{ gap: 14, textAlign: "left" }}>
       <div className="field">
-        <label className="field-lbl">Correo institucional</label>
+        <label className="field-lbl" htmlFor="email">Correo institucional</label>
         <input
+          id="email"
           className="input"
           type="email"
           required
@@ -66,8 +68,9 @@ function LoginForm() {
         />
       </div>
       <div className="field">
-        <label className="field-lbl">Contraseña</label>
+        <label className="field-lbl" htmlFor="password">Contraseña</label>
         <input
+          id="password"
           className="input"
           type="password"
           required
@@ -142,9 +145,9 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div style={{ height: "100vh", display: "grid", gridTemplateColumns: "1fr 1fr" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 40, background: "var(--surface)" }}>
-        <div style={{ width: 360, textAlign: "center" }}>
+    <div className={st.split}>
+      <div className={st.formSide}>
+        <div className={st.formInner}>
           <div style={{ display: "inline-flex", marginBottom: 28 }}>
             <Brand />
           </div>
@@ -153,21 +156,12 @@ export default function LoginPage() {
             Ingresa con tu cuenta institucional de la Universidad Técnica Federico Santa María. Administración y
             guardia van al panel; conductores, al portal.
           </p>
-          <Suspense fallback={null}>
+          <Suspense fallback={<p className="muted" style={{ fontSize: 13 }}>Cargando…</p>}>
             <LoginForm />
           </Suspense>
         </div>
       </div>
-      <div
-        style={{
-          background: "linear-gradient(160deg,var(--usm-azul-900),var(--usm-azul) 65%,#0a5a99)",
-          position: "relative",
-          overflow: "hidden",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
+      <div className={st.aside}>
         <div
           style={{
             position: "absolute",

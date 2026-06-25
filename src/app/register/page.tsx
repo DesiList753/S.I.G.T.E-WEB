@@ -51,8 +51,9 @@ export default function RegisterPage() {
 
         <form onSubmit={submit} className="col" style={{ gap: 14 }}>
           <div className="field">
-            <label className="field-lbl">Nombre completo</label>
+            <label className="field-lbl" htmlFor="name">Nombre completo</label>
             <input
+              id="name"
               className="input"
               required
               value={form.name}
@@ -60,8 +61,9 @@ export default function RegisterPage() {
             />
           </div>
           <div className="field">
-            <label className="field-lbl">Credencial universitaria</label>
+            <label className="field-lbl" htmlFor="universityId">Credencial universitaria</label>
             <input
+              id="universityId"
               className="input"
               placeholder="USR-2026-123"
               value={form.universityId}
@@ -69,8 +71,9 @@ export default function RegisterPage() {
             />
           </div>
           <div className="field">
-            <label className="field-lbl">Correo</label>
+            <label className="field-lbl" htmlFor="email">Correo</label>
             <input
+              id="email"
               className="input"
               type="email"
               required
@@ -80,8 +83,9 @@ export default function RegisterPage() {
             />
           </div>
           <div className="field">
-            <label className="field-lbl">Contraseña</label>
+            <label className="field-lbl" htmlFor="password">Contraseña</label>
             <input
+              id="password"
               className="input"
               type="password"
               required
@@ -98,7 +102,7 @@ export default function RegisterPage() {
             </div>
           )}
 
-          <button className="btn primary block" type="submit" disabled={loading}>
+          <button className="btn primary block" type="submit" disabled={loading || !form.name || !form.email || !form.password}>
             <I name="userCheck" size={18} /> {loading ? "Creando…" : "Registrarme"}
           </button>
 

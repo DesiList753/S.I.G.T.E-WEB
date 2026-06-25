@@ -270,9 +270,18 @@
   color: var(--ink-900);
 }
 
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-3);
+}
+
 @media (max-width: 820px) {
   .modules,
   .grid2 {
+    grid-template-columns: 1fr;
+  }
+  .grid3 {
     grid-template-columns: 1fr;
   }
 }

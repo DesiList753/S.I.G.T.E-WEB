@@ -196,7 +196,7 @@ export default async function Home() {
             quien corresponde.
           </p>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "var(--sp-3)" }}>
+          <div className={s.grid3}>
             {(
               [
                 [
