@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, Badge, Plate, DirTag } from "@/components/ui-system";
+import { Card, Plate, DirTag } from "@/components/ui-system";
 import { formatDate } from "@/lib/utils";
 
 type Log = {

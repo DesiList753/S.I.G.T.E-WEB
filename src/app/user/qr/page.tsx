@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, Plate, Badge } from "@/components/ui-system";
+import { Card, Plate } from "@/components/ui-system";
 import { I } from "@/components/Icon";
 
 type Vehicle = { id: string; plate: string };
