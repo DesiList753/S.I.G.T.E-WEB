@@ -43,7 +43,7 @@ function Sidebar({ groups }: { groups: PanelNavGroup[] }) {
   );
 }
 
-function TopBar({ title, subtitle, userName, userRole }: { title: string; subtitle: string; userName: string; userRole: string }) {
+function TopBar({ title, subtitle, userName, userRole, searchHref }: { title: string; subtitle: string; userName: string; userRole: string; searchHref: string }) {
   const router = useRouter();
   const [q, setQ] = useState("");
   const ini = userName.split(/[\s.]/).filter(Boolean).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
@@ -56,7 +56,7 @@ function TopBar({ title, subtitle, userName, userRole }: { title: string; subtit
       <div style={{ flex: 1 }} />
       <div className="searchbox" style={{ width: 250 }}>
         <I name="search" size={17} />
-        <input className="input" placeholder="Buscar patente, RUT o persona…" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && q.trim()) router.push(`/admin/vehicles?q=${encodeURIComponent(q.trim())}`); }} aria-label="Buscar" />
+        <input className="input" placeholder="Buscar patente, RUT o persona…" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && q.trim()) router.push(`${searchHref}?q=${encodeURIComponent(q.trim())}`); }} aria-label="Buscar" />
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 9, paddingLeft: 6, borderLeft: "1px solid var(--line)" }}>
         <span className="avatar">{ini || "…"}</span>
@@ -69,14 +69,14 @@ function TopBar({ title, subtitle, userName, userRole }: { title: string; subtit
   );
 }
 
-export function PanelShell({ groups, title, subtitle, userName, userRole, children }: {
-  groups: PanelNavGroup[]; title: string; subtitle: string; userName: string; userRole: string; children: ReactNode;
+export function PanelShell({ groups, title, subtitle, userName, userRole, searchHref = "/admin/vehicles", children }: {
+  groups: PanelNavGroup[]; title: string; subtitle: string; userName: string; userRole: string; searchHref?: string; children: ReactNode;
 }) {
   return (
     <div style={{ height: "100vh", display: "flex" }}>
       <Sidebar groups={groups} />
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-        <TopBar title={title} subtitle={subtitle} userName={userName} userRole={userRole} />
+        <TopBar title={title} subtitle={subtitle} userName={userName} userRole={userRole} searchHref={searchHref} />
         <div style={{ flex: 1, overflowY: "auto", background: "var(--bg)" }}>{children}</div>
       </div>
     </div>
