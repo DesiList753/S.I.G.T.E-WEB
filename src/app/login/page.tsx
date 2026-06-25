@@ -148,6 +148,14 @@ export default function LoginPage() {
     <div className={st.split}>
       <div className={st.formSide}>
         <div className={st.formInner}>
+          <div style={{ textAlign: "left", marginBottom: 18 }}>
+            <Link
+              href="/"
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--ink-500)" }}
+            >
+              <I name="chevronLeft" size={16} /> Volver al inicio
+            </Link>
+          </div>
           <div style={{ display: "inline-flex", marginBottom: 28 }}>
             <Brand />
           </div>
