@@ -159,11 +159,7 @@ export default function LoginPage() {
           <div style={{ display: "inline-flex", marginBottom: 28 }}>
             <Brand />
           </div>
-          <h1 style={{ fontSize: 26, marginBottom: 8 }}>Bienvenido a S.I.G.T.E</h1>
-          <p style={{ color: "var(--ink-500)", fontSize: 14, marginBottom: 24 }}>
-            Ingresa con tu cuenta institucional de la Universidad Técnica Federico Santa María. Administración y
-            guardia van al panel; conductores, al portal.
-          </p>
+          <h1 style={{ fontSize: 26, marginBottom: 24 }}>Bienvenido a S.I.G.T.E</h1>
           <Suspense fallback={<p className="muted" style={{ fontSize: 13 }}>Cargando…</p>}>
             <LoginForm />
           </Suspense>

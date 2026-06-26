@@ -321,23 +321,21 @@ async function main() {
   await prisma.notification.deleteMany({});
 
   const notifications = [
-    { email: "user@usm.cl",      title: "Infracción registrada",         message: "Se registró una infracción (Doble fila) para tu vehículo AABB12. Por favor comunícate con Seguridad.", read: false },
-    { email: "user@usm.cl",      title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada exitosamente. Podés generar tu QR de acceso desde el panel.", read: true },
-    { email: "pedro@usm.cl",     title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada exitosamente. Podés generar tu QR de acceso desde el panel.", read: true },
-    { email: "jose@usm.cl",      title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada exitosamente. Podés generar tu QR de acceso desde el panel.", read: true },
-    { email: "nicolas@usm.cl",   title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada. Registrá tu vehículo para obtener tu código QR de acceso.", read: false },
-    { email: "ismael@usm.cl",    title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada. Registrá tu vehículo para obtener tu código QR de acceso.", read: false },
-    { email: "gghh78@owner",       title: "Infracción — Bloque incorrecto", message: "Tu vehículo GGHH78 fue registrado en sector no autorizado. Estado: Notificado.", read: false },
-    { email: "ccdd34@owner",       title: "Permiso próximo a vencer",       message: "El permiso de tu vehículo CCDD34 está vencido. Renovalo en Administración.", read: false },
-    { email: "andrea@usm.cl",    title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada exitosamente. Podés generar tu QR de acceso desde el panel.", read: true },
-    { email: "diego@usm.cl",     title: "Vehículo no autorizado",         message: "Se detectó un intento de ingreso con tu vehículo FFGG19 que no tiene autorización activa.", read: false },
+    { email: "user@usm.cl",      title: "Infracción registrada",         message: "Se registró una infracción (Doble fila) para tu vehículo AABB12. Por favor comunícate con Seguridad.", read: false, createdAt: ago(3, 9, 15) },
+    { email: "user@usm.cl",      title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada exitosamente. Puedes generar tu QR de acceso desde el panel.", read: true, createdAt: ago(28, 8, 30) },
+    { email: "pedro@usm.cl",     title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada exitosamente. Puedes generar tu QR de acceso desde el panel.", read: true, createdAt: ago(25, 9, 10) },
+    { email: "jose@usm.cl",      title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada exitosamente. Puedes generar tu QR de acceso desde el panel.", read: true, createdAt: ago(23, 14, 45) },
+    { email: "nicolas@usm.cl",   title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada. Registra tu vehículo para obtener tu código QR de acceso.", read: false, createdAt: ago(6, 11, 20) },
+    { email: "ismael@usm.cl",    title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada. Registra tu vehículo para obtener tu código QR de acceso.", read: false, createdAt: ago(5, 16, 5) },
+    { email: "andrea@usm.cl",    title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada exitosamente. Puedes generar tu QR de acceso desde el panel.", read: true, createdAt: ago(19, 10, 0) },
+    { email: "diego@usm.cl",     title: "Vehículo no autorizado",         message: "Se detectó un intento de ingreso con tu vehículo FFGG19 que no tiene autorización activa.", read: false, createdAt: ago(2, 18, 40) },
   ];
 
   // Solo insertamos notificaciones para emails que existen en uMap
   const validNotifs = notifications.filter(n => uMap[n.email]);
   for (const n of validNotifs) {
     await prisma.notification.create({
-      data: { userId: uMap[n.email], title: n.title, message: n.message, read: n.read },
+      data: { userId: uMap[n.email], title: n.title, message: n.message, read: n.read, createdAt: n.createdAt },
     });
   }
 
@@ -348,6 +346,7 @@ async function main() {
       title: "Infracción — Bloque incorrecto",
       message: "Tu vehículo GGHH78 fue registrado en sector no autorizado. Estado: Notificado.",
       read: false,
+      createdAt: ago(4, 13, 25),
     },
   });
   // Notificación para dueño de CCDD34 (user@usm.cl)
@@ -355,8 +354,9 @@ async function main() {
     data: {
       userId: uMap["user@usm.cl"],
       title: "Permiso próximo a vencer",
-      message: "El permiso de tu vehículo CCDD34 está vencido. Renovalo en Administración.",
+      message: "El permiso de tu vehículo CCDD34 está próximo a vencer. Renuévalo en Administración.",
       read: false,
+      createdAt: ago(7, 10, 5),
     },
   });
 

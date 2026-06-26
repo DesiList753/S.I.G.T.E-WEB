@@ -5,30 +5,6 @@ import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import s from "./home.module.css";
 
-const MODULOS = [
-  {
-    icon: "dashboard",
-    titulo: "Panel web",
-    rol: "Administración y guardia",
-    desc: "Dashboard, padrón de vehículos, ocupación por sector, accesos en vivo e infracciones.",
-    cta: "Abrir panel",
-  },
-  {
-    icon: "qr",
-    titulo: "Portal del conductor",
-    rol: "Comunidad universitaria",
-    desc: "Tu código QR de acceso, tus vehículos, tus infracciones y tus avisos.",
-    cta: "Abrir portal",
-  },
-  {
-    icon: "login",
-    titulo: "Acceso institucional",
-    rol: "Cuenta @usm.cl",
-    desc: "Ingreso con tu cuenta de la universidad. Los roles los asigna administración.",
-    cta: "Iniciar sesión",
-  },
-] as const;
-
 const FUNCIONES = [
   ["barrier", "Control de acceso", "Cada entrada y salida del pórtico queda registrada en la bitácora."],
   ["parking", "Ocupación por sector", "Los cupos de cada estacionamiento se calculan en tiempo real."],
@@ -75,25 +51,6 @@ export default async function Home() {
       </section>
 
       <div className={s.wrap}>
-        <section className={s.section}>
-          <div className={s.sectionTitle}>Plataformas</div>
-          <div className={s.modules}>
-            {MODULOS.map((m) => (
-              <Link key={m.titulo} href="/login" className={s.mod}>
-                <span className={s.modIcon}>
-                  <I name={m.icon} size={20} />
-                </span>
-                <h3>{m.titulo}</h3>
-                <div className={s.modRole}>{m.rol}</div>
-                <p>{m.desc}</p>
-                <span className={s.go}>
-                  {m.cta} <I name="arrowRight" size={15} />
-                </span>
-              </Link>
-            ))}
-          </div>
-        </section>
-
         <section className={s.section}>
           <div className={s.sectionTitle}>Qué hace el sistema</div>
           <div className={s.features}>
