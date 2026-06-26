@@ -42,8 +42,8 @@ export function ChartsUSM({ series, occupancy, methodDist, topVehicles }: {
           <BarChart data={occupancy} margin={{ top: 8, right: 12, bottom: 0, left: -18 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(128,140,152,.25)" />
             <XAxis dataKey="name" tick={{ fontSize: 11 }} /><YAxis tick={{ fontSize: 11 }} allowDecimals={false} /><Tooltip />
-            <Bar dataKey="capacity" fill="rgba(128,140,152,.3)" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="occupied" radius={[4, 4, 0, 0]}>
+            <Bar dataKey="capacity" name="Capacidad" fill="rgba(128,140,152,.3)" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="occupied" name="Ocupados" radius={[4, 4, 0, 0]}>
               {occupancy.map((sct, i) => <Cell key={i} fill={sct.percentage > 85 ? ROJO : sct.percentage > 50 ? AMARILLO : VERDE} />)}
             </Bar>
           </BarChart>

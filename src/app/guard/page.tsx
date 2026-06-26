@@ -5,6 +5,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { Card, Plate, Badge, Metric } from "@/components/ui-system";
 import { I } from "@/components/Icon";
+import { QrScanner } from "@/components/QrScanner";
 
 type Vehicle = {
   id: string;
@@ -35,6 +36,7 @@ export default function GuardAccess() {
   const [totals, setTotals] = useState<Totals | null>(null);
   const [selectedBlock, setSelectedBlock] = useState<string>(""); // "" = usar default
   const [busy, setBusy] = useState(false);
+  const [scanning, setScanning] = useState(false);
 
   useEffect(() => {
     refreshParking();
@@ -46,15 +48,22 @@ export default function GuardAccess() {
     setTotals(r.totals ?? null);
   }
 
-  async function lookup() {
-    if (!query.trim()) return;
+  async function lookup(value?: string) {
+    const v = (value ?? query).trim();
+    if (!v) return;
     const r = await fetch(
-      `/api/access/lookup?${mode}=${encodeURIComponent(query.trim())}`
+      `/api/access/lookup?${mode}=${encodeURIComponent(v)}`
     ).then((r) => r.json());
     setResult(r);
     if (r.qrError === "expirado") toast.error("QR expirado (válido por 5 minutos)");
     else if (r.qrError === "invalido") toast.error("QR inválido o falsificado");
     else if (!r.vehicle) toast.error("Vehículo no encontrado en el sistema");
+  }
+
+  function handleScan(text: string) {
+    setScanning(false);
+    setQuery(text);
+    lookup(text);
   }
 
   async function register(direction: "IN" | "OUT") {
@@ -147,6 +156,7 @@ export default function GuardAccess() {
                 setMode(m.id);
                 setResult(null);
                 setQuery("");
+                setScanning(false);
               }}
             >
               <I name={m.icon} size={16} />
@@ -172,11 +182,24 @@ export default function GuardAccess() {
               onKeyDown={(e) => e.key === "Enter" && lookup()}
             />
           </div>
-          <button className="btn primary" onClick={lookup}>
+          {mode === "qr" && (
+            <button
+              className={"btn " + (scanning ? "" : "ghost")}
+              onClick={() => setScanning((s) => !s)}
+            >
+              <I name="scan" size={16} />
+              {scanning ? "Detener" : "Escanear"}
+            </button>
+          )}
+          <button className="btn primary" onClick={() => lookup()}>
             <I name="search" size={16} />
             Buscar
           </button>
         </div>
+
+        {scanning && mode === "qr" && (
+          <QrScanner onScan={handleScan} onClose={() => setScanning(false)} />
+        )}
 
         {result?.vehicle && (
           <VehicleCard

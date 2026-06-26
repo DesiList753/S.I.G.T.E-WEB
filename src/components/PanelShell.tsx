@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { I } from "@/components/Icon";
 import { Brand } from "@/components/ui-system";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -50,9 +50,7 @@ function Sidebar({ groups }: { groups: PanelNavGroup[] }) {
   );
 }
 
-function TopBar({ title, subtitle, userName, userRole, searchHref }: { title: string; subtitle: string; userName: string; userRole: string; searchHref: string }) {
-  const router = useRouter();
-  const [q, setQ] = useState("");
+function TopBar({ title, subtitle, userName, userRole }: { title: string; subtitle: string; userName: string; userRole: string }) {
   const ini = userName.split(/[\s.]/).filter(Boolean).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
   return (
     <header style={{ height: 62, flex: "none", background: "var(--surface)", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", gap: 16, padding: "0 24px" }}>
@@ -61,10 +59,6 @@ function TopBar({ title, subtitle, userName, userRole, searchHref }: { title: st
         <div style={{ fontSize: 12, color: "var(--ink-500)", marginTop: 1 }}>{subtitle}</div>
       </div>
       <div style={{ flex: 1 }} />
-      <div className="searchbox" style={{ width: 250 }}>
-        <I name="search" size={17} />
-        <input className="input" placeholder="Buscar patente, RUT o persona…" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && q.trim()) router.push(`${searchHref}?q=${encodeURIComponent(q.trim())}`); }} aria-label="Buscar" />
-      </div>
       <ThemeToggle />
       <div style={{ display: "flex", alignItems: "center", gap: 9, paddingLeft: 6, borderLeft: "1px solid var(--line)" }}>
         <span className="avatar">{ini || "…"}</span>
@@ -77,14 +71,14 @@ function TopBar({ title, subtitle, userName, userRole, searchHref }: { title: st
   );
 }
 
-export function PanelShell({ groups, title, subtitle, userName, userRole, searchHref = "/admin/vehicles", children }: {
-  groups: PanelNavGroup[]; title: string; subtitle: string; userName: string; userRole: string; searchHref?: string; children: ReactNode;
+export function PanelShell({ groups, title, subtitle, userName, userRole, children }: {
+  groups: PanelNavGroup[]; title: string; subtitle: string; userName: string; userRole: string; children: ReactNode;
 }) {
   return (
     <div style={{ height: "100vh", display: "flex" }}>
       <Sidebar groups={groups} />
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-        <TopBar title={title} subtitle={subtitle} userName={userName} userRole={userRole} searchHref={searchHref} />
+        <TopBar title={title} subtitle={subtitle} userName={userName} userRole={userRole} />
         <div style={{ flex: 1, overflowY: "auto", background: "var(--bg)" }}>{children}</div>
       </div>
     </div>

@@ -15,6 +15,7 @@ export default function UserQR() {
   const [qr, setQr] = useState<QRData | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     fetch("/api/vehicles")
@@ -122,6 +123,25 @@ export default function UserQR() {
                       }}
                     />
                   </div>
+                  <button
+                    className="btn ghost block"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(qr.token);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      } catch {
+                        /* clipboard no disponible */
+                      }
+                    }}
+                  >
+                    <I name={copied ? "check" : "file"} size={16} />
+                    {copied ? "Token copiado" : "Copiar token"}
+                  </button>
+                  <span className="field-hint" style={{ textAlign: "center" }}>
+                    El guardia puede escanear este QR con la cámara, o puedes
+                    copiar el token y dictárselo si no hay cámara disponible.
+                  </span>
                 </div>
               </div>
             )}

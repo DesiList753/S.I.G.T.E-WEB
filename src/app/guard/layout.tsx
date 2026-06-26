@@ -19,7 +19,7 @@ export default async function GuardLayout({ children }: { children: React.ReactN
   if (session.role !== "GUARD" && session.role !== "ADMIN") redirect("/");
   return (
     <>
-      <PanelShell groups={groups} title="Guardia" subtitle="Operación de pórtico" userName={session.name} userRole="Guardia" searchHref="/guard/search">
+      <PanelShell groups={groups} title="Guardia" subtitle="Operación de pórtico" userName={session.name} userRole="Guardia">
         {children}
       </PanelShell>
       <Toaster richColors position="top-right" />
