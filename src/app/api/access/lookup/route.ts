@@ -37,7 +37,7 @@ export const GET = withAuth(
         });
       }
     } else {
-      return jsonError(400, "Indicá plate, qr o uid");
+      return jsonError(400, "Indica plate, qr o uid");
     }
 
     if (!vehicle) return NextResponse.json({ vehicle: null });

@@ -8,9 +8,9 @@ import { Brand } from "@/components/ui-system";
 import st from "./login.module.css";
 
 const DEMO = [
-  { role: "Admin", email: "admin@sigte.cl", pw: "admin123" },
-  { role: "Guardia", email: "guardia@sigte.cl", pw: "guard123" },
-  { role: "Usuario", email: "user@sigte.cl", pw: "user123" },
+  { role: "Admin", email: "admin@usm.cl", pw: "admin123" },
+  { role: "Guardia", email: "guardia@usm.cl", pw: "guard123" },
+  { role: "Usuario", email: "user@usm.cl", pw: "user123" },
 ] as const;
 
 function LoginForm() {
