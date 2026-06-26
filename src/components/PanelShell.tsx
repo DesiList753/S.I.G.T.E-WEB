@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { I } from "@/components/Icon";
 import { Brand } from "@/components/ui-system";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -9,7 +9,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 export interface PanelNavItem { href: string; label: string; icon: string; }
 export interface PanelNavGroup { grp: string; items: PanelNavItem[]; }
 
-function Sidebar({ groups }: { groups: PanelNavGroup[] }) {
+function Sidebar({ groups, open, onClose }: { groups: PanelNavGroup[]; open: boolean; onClose: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   // Ítem activo = el href más específico (más largo) que coincide con la ruta;
@@ -23,8 +23,8 @@ function Sidebar({ groups }: { groups: PanelNavGroup[] }) {
     router.replace("/login");
   }
   return (
-    <aside style={{ width: 244, background: "var(--usm-azul-900)", color: "#fff", display: "flex", flexDirection: "column", flex: "none" }}>
-      <Link href="/" style={{ padding: "18px 18px 16px", borderBottom: "1px solid rgba(255,255,255,.1)", color: "inherit" }}>
+    <aside className={"panel-sidebar" + (open ? " open" : "")} style={{ width: 244, background: "var(--usm-azul-900)", color: "#fff", display: "flex", flexDirection: "column", flex: "none" }}>
+      <Link href="/" onClick={onClose} style={{ padding: "18px 18px 16px", borderBottom: "1px solid rgba(255,255,255,.1)", color: "inherit" }}>
         <Brand light />
       </Link>
       <nav style={{ flex: 1, overflowY: "auto", padding: "14px 12px" }}>
@@ -34,7 +34,7 @@ function Sidebar({ groups }: { groups: PanelNavGroup[] }) {
             {g.items.map((it) => {
               const on = it.href === activeHref;
               return (
-                <Link key={it.href} href={it.href} style={{ display: "flex", alignItems: "center", gap: 11, padding: "9px 10px", marginBottom: 2, borderRadius: 8, background: on ? "var(--usm-azul)" : "transparent", color: on ? "#fff" : "rgba(255,255,255,.78)", fontFamily: "var(--ff-body)", fontSize: 13.5, fontWeight: on ? 600 : 400, boxShadow: on ? "inset 3px 0 0 var(--usm-amarillo)" : "none" }}>
+                <Link key={it.href} href={it.href} onClick={onClose} style={{ display: "flex", alignItems: "center", gap: 11, padding: "9px 10px", marginBottom: 2, borderRadius: 8, background: on ? "var(--usm-azul)" : "transparent", color: on ? "#fff" : "rgba(255,255,255,.78)", fontFamily: "var(--ff-body)", fontSize: 13.5, fontWeight: on ? 600 : 400, boxShadow: on ? "inset 3px 0 0 var(--usm-amarillo)" : "none" }}>
                   <I name={it.icon} size={18} stroke={1.9} />
                   <span style={{ flex: 1 }}>{it.label}</span>
                 </Link>
@@ -50,10 +50,13 @@ function Sidebar({ groups }: { groups: PanelNavGroup[] }) {
   );
 }
 
-function TopBar({ title, subtitle, userName, userRole }: { title: string; subtitle: string; userName: string; userRole: string }) {
+function TopBar({ title, subtitle, userName, userRole, onBurger }: { title: string; subtitle: string; userName: string; userRole: string; onBurger: () => void }) {
   const ini = userName.split(/[\s.]/).filter(Boolean).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
   return (
-    <header style={{ height: 62, flex: "none", background: "var(--surface)", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", gap: 16, padding: "0 24px" }}>
+    <header style={{ height: 62, flex: "none", background: "var(--surface)", borderBottom: "1px solid var(--line)", display: "flex", alignItems: "center", gap: 16, padding: "0 16px" }}>
+      <button className="panel-burger" onClick={onBurger} aria-label="Abrir menú">
+        <I name="menu" size={22} />
+      </button>
       <div style={{ minWidth: 0 }}>
         <div style={{ fontFamily: "var(--ff-display)", fontWeight: 700, fontSize: 19, lineHeight: 1.1 }}>{title}</div>
         <div style={{ fontSize: 12, color: "var(--ink-500)", marginTop: 1 }}>{subtitle}</div>
@@ -74,11 +77,13 @@ function TopBar({ title, subtitle, userName, userRole }: { title: string; subtit
 export function PanelShell({ groups, title, subtitle, userName, userRole, children }: {
   groups: PanelNavGroup[]; title: string; subtitle: string; userName: string; userRole: string; children: ReactNode;
 }) {
+  const [navOpen, setNavOpen] = useState(false);
   return (
     <div style={{ height: "100vh", display: "flex" }}>
-      <Sidebar groups={groups} />
+      <Sidebar groups={groups} open={navOpen} onClose={() => setNavOpen(false)} />
+      {navOpen && <div className="panel-overlay" onClick={() => setNavOpen(false)} />}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-        <TopBar title={title} subtitle={subtitle} userName={userName} userRole={userRole} />
+        <TopBar title={title} subtitle={subtitle} userName={userName} userRole={userRole} onBurger={() => setNavOpen(true)} />
         <div style={{ flex: 1, overflowY: "auto", background: "var(--bg)" }}>{children}</div>
       </div>
     </div>
