@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import QRCode from "qrcode";
 import { prisma } from "@/lib/prisma";
 import { jsonError, withAuth } from "@/lib/api";
+import { signQrToken } from "@/lib/qr";
 
 /**
  * GET /api/qr?vehicleId=xxx
@@ -22,7 +23,7 @@ export const GET = withAuth(async (req, { session }) => {
 
   const issuedAt = Date.now();
   const expiresAt = issuedAt + 5 * 60_000;
-  const token = `sigte:v1:${vehicle.id}:${issuedAt}`;
+  const token = signQrToken(vehicle.id, issuedAt);
   const dataUrl = await QRCode.toDataURL(token, {
     margin: 1,
     width: 360,

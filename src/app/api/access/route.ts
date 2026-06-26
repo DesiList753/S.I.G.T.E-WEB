@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { jsonError, parseJson, withAuth } from "@/lib/api";
+import { sendPushToUser } from "@/lib/push";
 
 /**
  * GET /api/access — últimos accesos (guardia / admin ven todo, usuario solo los suyos)
@@ -9,6 +10,7 @@ import { jsonError, parseJson, withAuth } from "@/lib/api";
 export const GET = withAuth(async (req, { session }) => {
   const url = new URL(req.url);
   const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "50", 10), 500);
+  const format = url.searchParams.get("format");
 
   const where: Record<string, unknown> = {};
   if (session.role === "USER") {
@@ -25,6 +27,27 @@ export const GET = withAuth(async (req, { session }) => {
       block: { select: { id: true, name: true } },
     },
   });
+
+  if (format === "csv") {
+    const headers = ["timestamp", "plate", "owner", "method", "direction", "block", "guard", "authorized", "note"];
+    const rows = logs.map((l) => [
+      l.timestamp.toISOString(),
+      l.vehicle.plate,
+      l.vehicle.owner?.name ?? "",
+      l.method,
+      l.direction,
+      l.block?.name ?? "",
+      l.guard?.name ?? "",
+      l.authorized ? "Autorizado" : "Rechazado",
+      l.note ?? "",
+    ]);
+    const csv = [headers.join(","), ...rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(","))].join("\n");
+    return new NextResponse(csv, {
+      status: 200,
+      headers: { "Content-Type": "text/csv", "Content-Disposition": "attachment; filename=\"bitacora.csv\"" },
+    });
+  }
+
   return NextResponse.json({ logs });
 });
 
@@ -89,6 +112,23 @@ export const POST = withAuth(
       blockToAssign = defaultBlock?.id;
     }
 
+    // Verificar capacidad del bloque destino
+    if (body.direction === "IN" && blockToAssign) {
+      const block = await prisma.parkingBlock.findUnique({ where: { id: blockToAssign } });
+      if (block) {
+        const occupied = await prisma.vehicle.count({ where: { currentBlockId: blockToAssign } });
+        if (occupied >= block.capacity) {
+          return jsonError(409, `Bloque ${block.name} lleno (${occupied}/${block.capacity})`);
+        }
+      }
+    }
+
+    // Vehículo no autorizado: registrar con nota y devolver advertencia
+    let warning: string | undefined;
+    if (body.direction === "IN" && !vehicle.authorized) {
+      warning = "Vehículo no autorizado. Acceso registrado con advertencia.";
+    }
+
     const log = await prisma.accessLog.create({
       data: {
         vehicleId: vehicle.id,
@@ -98,7 +138,7 @@ export const POST = withAuth(
         direction: body.direction,
         blockId: blockToAssign ?? null,
         authorized: vehicle.authorized,
-        note: body.note,
+        note: body.note ?? warning,
       },
       include: {
         vehicle: { include: { owner: { select: { id: true, name: true, email: true } } } },
@@ -121,19 +161,24 @@ export const POST = withAuth(
     }
 
     if (vehicle.ownerId) {
+      const title = body.direction === "IN" ? "Ingreso registrado" : "Salida registrada";
+      const message =
+        body.direction === "IN"
+          ? `Vehículo ${vehicle.plate} ingresó al campus${log.block ? ` (${log.block.name})` : ""}.`
+          : `Vehículo ${vehicle.plate} salió del campus.`;
+
       await prisma.notification.create({
-        data: {
-          userId: vehicle.ownerId,
-          title: body.direction === "IN" ? "Ingreso registrado" : "Salida registrada",
-          message:
-            body.direction === "IN"
-              ? `Vehículo ${vehicle.plate} ingresó al campus${log.block ? ` (${log.block.name})` : ""}.`
-              : `Vehículo ${vehicle.plate} salió del campus.`,
-        },
+        data: { userId: vehicle.ownerId, title, message },
       });
+
+      sendPushToUser(vehicle.ownerId, {
+        title,
+        body: message,
+        data: { kind: "access", direction: body.direction, plate: vehicle.plate },
+      }).catch(() => {});
     }
 
-    return NextResponse.json({ log, authorized: vehicle.authorized }, { status: 201 });
+    return NextResponse.json({ log, authorized: vehicle.authorized, warning }, { status: 201 });
   },
   { roles: ["GUARD", "ADMIN"] }
 );

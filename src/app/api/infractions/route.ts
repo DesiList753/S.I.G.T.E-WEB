@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { jsonError, parseJson, withAuth } from "@/lib/api";
+import { sendPushToUser } from "@/lib/push";
 
 export const GET = withAuth(async (_req, { session }) => {
   const where: Record<string, unknown> = {};
@@ -61,13 +62,18 @@ export const POST = withAuth(
     });
 
     if (vehicle.ownerId) {
+      const title = "Nueva infracción registrada";
+      const message = `Patente ${vehicle.plate}: ${body.description}`;
+
       await prisma.notification.create({
-        data: {
-          userId: vehicle.ownerId,
-          title: "Nueva infracción registrada",
-          message: `Patente ${vehicle.plate}: ${body.description}`,
-        },
+        data: { userId: vehicle.ownerId, title, message },
       });
+
+      sendPushToUser(vehicle.ownerId, {
+        title,
+        body: message,
+        data: { kind: "infraction", plate: vehicle.plate, type: body.type },
+      }).catch(() => {});
     }
 
     return NextResponse.json({ infraction }, { status: 201 });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, Badge, Plate, DirTag } from "@/components/ui-system";
+import { Card, Plate, DirTag } from "@/components/ui-system";
 import { I } from "@/components/Icon";
 import { formatDate } from "@/lib/utils";
 
@@ -12,7 +12,7 @@ type Log = {
   timestamp: string;
   authorized: boolean;
   note: string | null;
-  vehicle: { id: string; plate: string; owner: { id: string; name: string } | null };
+  vehicle: { id: string; plate: string };
   guard: { id: string; name: string } | null;
   block: { id: string; name: string } | null;
 };
@@ -24,32 +24,20 @@ const methodIcon: Record<Log["method"], string> = {
   MANUAL: "idcard",
 };
 
-export default function AdminAccess() {
+export default function UserAccess() {
   const [logs, setLogs] = useState<Log[]>([]);
   useEffect(() => {
-    fetch("/api/access?limit=200")
+    fetch("/api/access")
       .then((r) => r.json())
       .then((d) => setLogs(d.logs ?? []));
   }, []);
 
-  function exportCsv() {
-    window.open("/api/access?limit=5000&format=csv", "_blank");
-  }
-
   return (
-    <div style={{ padding: 24 }}>
-      <div className="row between" style={{ marginBottom: 20 }}>
-        <div>
-          <h1 style={{ fontFamily: "var(--ff-display)", fontSize: 24 }}>Historial de accesos</h1>
-          <p className="muted" style={{ fontSize: 13 }}>
-            Trazabilidad completa de ingresos y salidas al campus
-          </p>
-        </div>
-        <button className="btn ghost" onClick={exportCsv}>
-          <I name="download" size={16} />
-          Exportar CSV
-        </button>
-      </div>
+    <div style={{ display: "grid", gap: 16 }}>
+      <header>
+        <h1 style={{ fontFamily: "var(--ff-display)", fontSize: 24 }}>Mis accesos</h1>
+        <p className="muted">Historial de ingresos y salidas de tus vehículos</p>
+      </header>
 
       <Card>
         <table className="table">
@@ -57,7 +45,6 @@ export default function AdminAccess() {
             <tr>
               <th>Fecha</th>
               <th>Patente</th>
-              <th>Dueño</th>
               <th>Método</th>
               <th>Dirección</th>
               <th>Bloque</th>
@@ -74,7 +61,6 @@ export default function AdminAccess() {
                 <td>
                   <Plate size="sm">{l.vehicle.plate}</Plate>
                 </td>
-                <td className="muted">{l.vehicle.owner?.name ?? "—"}</td>
                 <td>
                   <span className="row" style={{ gap: 6, alignItems: "center" }}>
                     <I name={methodIcon[l.method]} size={14} />
@@ -87,16 +73,16 @@ export default function AdminAccess() {
                 <td className="muted">{l.block?.name ?? "—"}</td>
                 <td className="muted">{l.guard?.name ?? "—"}</td>
                 <td>
-                  <Badge kind={l.authorized ? "go" : "no"}>
+                  <span style={{ color: l.authorized ? "var(--ok-600)" : "var(--no-600)", fontWeight: 600 }}>
                     {l.authorized ? "Autorizado" : "Rechazado"}
-                  </Badge>
+                  </span>
                 </td>
               </tr>
             ))}
             {logs.length === 0 && (
               <tr>
-                <td colSpan={8} style={{ textAlign: "center", padding: 24 }} className="muted">
-                  Sin registros
+                <td colSpan={7} style={{ textAlign: "center", padding: 24 }} className="muted">
+                  Sin registros de acceso
                 </td>
               </tr>
             )}

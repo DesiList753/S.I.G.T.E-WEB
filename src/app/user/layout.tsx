@@ -7,6 +7,7 @@ const tabs: PortalTab[] = [
   { href: "/user", label: "Inicio", icon: "home" },
   { href: "/user/vehicles", label: "Mis vehículos", icon: "car" },
   { href: "/user/qr", label: "QR de acceso", icon: "qr" },
+  { href: "/user/access", label: "Mis accesos", icon: "history" },
   { href: "/user/infractions", label: "Infracciones", icon: "file" },
   { href: "/user/notifications", label: "Notificaciones", icon: "bell" },
 ];

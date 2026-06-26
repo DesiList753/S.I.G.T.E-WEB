@@ -25,7 +25,7 @@ type Block = {
   isDefault: boolean;
 };
 type Totals = { inside: number; capacity: number; free: number; defaultBlockId: string | null };
-type LookupResponse = { vehicle: Vehicle | null; openInfractions?: number };
+type LookupResponse = { vehicle: Vehicle | null; openInfractions?: number; qrError?: "invalido" | "expirado" };
 
 export default function GuardAccess() {
   const [mode, setMode] = useState<"plate" | "qr" | "uid">("plate");
@@ -52,7 +52,9 @@ export default function GuardAccess() {
       `/api/access/lookup?${mode}=${encodeURIComponent(query.trim())}`
     ).then((r) => r.json());
     setResult(r);
-    if (!r.vehicle) toast.error("Vehículo no encontrado en el sistema");
+    if (r.qrError === "expirado") toast.error("QR expirado (válido por 5 minutos)");
+    else if (r.qrError === "invalido") toast.error("QR inválido o falsificado");
+    else if (!r.vehicle) toast.error("Vehículo no encontrado en el sistema");
   }
 
   async function register(direction: "IN" | "OUT") {
@@ -73,6 +75,7 @@ export default function GuardAccess() {
       if (!r.ok) {
         toast.error(data.error ?? "Error al registrar");
       } else {
+        if (data.warning) toast.warning(data.warning);
         toast.success(direction === "IN" ? "Ingreso registrado" : "Salida registrada");
         setQuery("");
         setResult(null);

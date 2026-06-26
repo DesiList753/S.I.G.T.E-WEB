@@ -31,11 +31,31 @@ const STATUS_LABEL: Record<Infraction["status"], string> = {
 
 export default function UserInfractions() {
   const [items, setItems] = useState<Infraction[]>([]);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
   useEffect(() => {
     fetch("/api/infractions")
       .then((r) => r.json())
       .then((d) => setItems(d.infractions ?? []));
   }, []);
+
+  async function acknowledge(id: string) {
+    setBusyId(id);
+    try {
+      const r = await fetch(`/api/infractions/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "ACKNOWLEDGED" }),
+      });
+      if (r.ok) {
+        setItems((prev) =>
+          prev.map((i) => (i.id === id ? { ...i, status: "ACKNOWLEDGED" } : i))
+        );
+      }
+    } finally {
+      setBusyId(null);
+    }
+  }
 
   const openCount = items.filter((i) => i.status === "OPEN").length;
 
@@ -90,6 +110,18 @@ export default function UserInfractions() {
               </div>
               <Badge kind={STATUS_KIND[i.status]}>{STATUS_LABEL[i.status]}</Badge>
             </div>
+            {i.status === "OPEN" && (
+              <div style={{ marginTop: 12 }}>
+                <button
+                  className="btn primary sm"
+                  onClick={() => acknowledge(i.id)}
+                  disabled={busyId === i.id}
+                >
+                  <I name="check" size={15} />
+                  Reconocer
+                </button>
+              </div>
+            )}
           </Card>
         ))}
         {items.length === 0 && (
