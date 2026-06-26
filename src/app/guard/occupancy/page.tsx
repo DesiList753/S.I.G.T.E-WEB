@@ -2,46 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  ArrowLeftRight,
-  Car,
-  CircleParking,
-  Inbox,
-  Layers,
-  LogOut,
-  RefreshCw,
-  Search,
-  Star,
-  User as UserIcon,
-} from "lucide-react";
-import { cn, formatDate } from "@/lib/utils";
+import { Card, Modal, Plate, Badge, LotGrid, Metric } from "@/components/ui-system";
+import { I } from "@/components/Icon";
+import { lotLevel, type Lot } from "@/lib/design-data";
 
 type Block = {
   id: string;
@@ -157,207 +120,157 @@ export default function GuardLive() {
     ? Math.round((totals.inside / totals.capacity) * 100)
     : 0;
 
+  // Map blocks → Lot[] for the LotGrid (semáforo).
+  const lots: Lot[] = blocks.map((b) => ({
+    id: b.id,
+    nombre: b.name,
+    ocup: b.occupied,
+    cap: b.capacity,
+    ...lotLevel(b.occupied, b.capacity),
+  }));
+
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
+    <div style={{ padding: 24 }}>
+      <div className="row between" style={{ marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Estacionamiento en vivo</h1>
-          <p className="text-muted-foreground text-sm">
+          <h1 style={{ fontFamily: "var(--ff-display)", fontSize: 24 }}>Estacionamiento en vivo</h1>
+          <p className="muted" style={{ fontSize: 13 }}>
             Vehículos dentro del campus, agrupados por bloque
           </p>
         </div>
-        <Badge variant="outline" className="gap-1.5">
-          <RefreshCw className="size-3" />
-          {new Date(ts).toLocaleTimeString()}
+        <Badge kind="info">
+          Actualizado {new Date(ts).toLocaleTimeString()}
         </Badge>
-      </header>
+      </div>
 
       {/* CUENTA GENERAL */}
       {totals && (
-        <Card className="border-primary/40 bg-gradient-to-br from-primary/5 to-transparent">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardDescription className="uppercase tracking-wider text-xs">
-                Cuenta general · tiempo real
-              </CardDescription>
-              <Layers className="size-4 text-primary" />
-            </div>
-            <div className="flex items-end gap-3">
-              <div className="text-5xl font-bold tabular-nums">{totals.inside}</div>
-              <div className="pb-2">
-                <div className="text-muted-foreground">
-                  de <span className="text-foreground font-medium">{totals.capacity}</span> capacidad
-                </div>
-                <div className="text-sm text-[hsl(var(--success))]">{totals.free} libres</div>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Progress value={pctGlobal} />
-            <p className="text-xs text-muted-foreground mt-2">
-              {pctGlobal}% de ocupación — suma de todos los bloques
-            </p>
-          </CardContent>
-        </Card>
+        <div className="row" style={{ gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
+          <div style={{ flex: 1, minWidth: 180 }}>
+            <Metric
+              label="Cuenta general · tiempo real"
+              icon="parking"
+              value={totals.inside}
+              sub={`de ${totals.capacity} · ${pctGlobal}% ocupación`}
+            />
+          </div>
+          <div style={{ flex: 1, minWidth: 180 }}>
+            <Metric label="Cupos libres" icon="check" value={totals.free} sub="disponibles ahora" />
+          </div>
+          <div style={{ flex: 1, minWidth: 180 }}>
+            <Metric label="Capacidad total" icon="barrier" value={totals.capacity} sub="suma de bloques" />
+          </div>
+        </div>
       )}
 
-      {/* BLOQUES CLICKABLES */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-        <BlockChip
-          name="Todos"
-          count={vehicles.length}
-          capacity={totals?.capacity ?? 0}
-          isActive={activeBlockId === "ALL"}
+      {/* OCUPACIÓN POR BLOQUE (semáforo) */}
+      <Card title="Ocupación por bloque" style={{ marginBottom: 16 }}>
+        {lots.length === 0 ? (
+          <div className="muted" style={{ textAlign: "center", padding: 24 }}>Sin bloques</div>
+        ) : (
+          <LotGrid cols={3} lots={lots} />
+        )}
+      </Card>
+
+      {/* BLOQUES CLICKABLES (filtro) */}
+      <div className="row" style={{ gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+        <button
+          className={"btn " + (activeBlockId === "ALL" ? "primary" : "ghost")}
           onClick={() => setActiveBlockId("ALL")}
-        />
+        >
+          Todos · {vehicles.length}
+        </button>
         {blocks.map((b) => (
-          <BlockChip
+          <button
             key={b.id}
-            name={b.name}
-            count={b.occupied}
-            capacity={b.capacity}
-            isActive={activeBlockId === b.id}
-            isDefault={b.isDefault}
+            className={"btn " + (activeBlockId === b.id ? "primary" : "ghost")}
             onClick={() => setActiveBlockId(b.id)}
-          />
+          >
+            {b.isDefault ? "⭐ " : ""}
+            {b.name} · {b.occupied}
+            {b.capacity > 0 ? `/${b.capacity}` : ""}
+          </button>
         ))}
       </div>
 
       {/* BARRA DE BÚSQUEDA + LISTA */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                {activeBlockId === "ALL" ? (
-                  <>
-                    <Layers className="size-4 text-primary" />
-                    Todos los vehículos dentro
-                  </>
-                ) : activeBlock?.isDefault ? (
-                  <>
-                    <Inbox className="size-4 text-primary" />
-                    {activeBlock.name} · Sin asignar a un bloque específico
-                  </>
-                ) : (
-                  <>
-                    <CircleParking className="size-4 text-primary" />
-                    {activeBlock?.name ?? "—"}
-                  </>
-                )}
-              </CardTitle>
-              <CardDescription>
-                {filtered.length} vehículo{filtered.length === 1 ? "" : "s"}
-                {search ? ` · filtrado por "${search}"` : ""}
-              </CardDescription>
-            </div>
-            <div className="relative w-full max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input
-                className="pl-9"
-                placeholder="Patente o nombre..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+      <Card
+        title={
+          activeBlockId === "ALL"
+            ? "Todos los vehículos dentro"
+            : activeBlock?.isDefault
+            ? `${activeBlock.name} · Sin asignar a un bloque específico`
+            : activeBlock?.name ?? "—"
+        }
+        action={
+          <div className="searchbox" style={{ width: 240, maxWidth: "100%" }}>
+            <I name="search" size={17} />
+            <input
+              className="input"
+              placeholder="Patente o nombre..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
-        </CardHeader>
-        <CardContent>
-          {filtered.length === 0 ? (
-            <div className="py-10 text-center text-muted-foreground">
-              <Car className="mx-auto size-8 mb-2 opacity-50" />
-              <p>No hay vehículos en esta vista.</p>
-            </div>
-          ) : (
-            <div className="grid gap-2 md:grid-cols-2">
+        }
+      >
+        <p className="muted" style={{ fontSize: 13, marginBottom: 12 }}>
+          {filtered.length} vehículo{filtered.length === 1 ? "" : "s"}
+          {search ? ` · filtrado por "${search}"` : ""}
+        </p>
+        {filtered.length === 0 ? (
+          <div className="muted" style={{ textAlign: "center", padding: 40 }}>
+            <I name="car" size={28} />
+            <p style={{ marginTop: 8 }}>No hay vehículos en esta vista.</p>
+          </div>
+        ) : (
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Patente</th>
+                <th>Dueño</th>
+                <th>Bloque</th>
+                <th style={{ textAlign: "right" }}>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
               {filtered.map((v) => (
-                <VehicleRow key={v.id} vehicle={v} onClick={() => setSelected(v)} />
+                <tr key={v.id} style={{ cursor: "pointer" }} onClick={() => setSelected(v)}>
+                  <td>
+                    <Plate size="sm">{v.plate}</Plate>
+                  </td>
+                  <td>
+                    <div style={{ fontWeight: 600 }}>{v.owner.name}</div>
+                    {v.owner.universityId && (
+                      <div className="mono muted" style={{ fontSize: 12 }}>{v.owner.universityId}</div>
+                    )}
+                  </td>
+                  <td>
+                    {v.currentBlock ? <Badge kind="info">{v.currentBlock.name}</Badge> : <span className="muted">—</span>}
+                  </td>
+                  <td style={{ textAlign: "right" }}>
+                    <Badge kind={v.authorized ? "go" : "no"}>
+                      {v.authorized ? "Autorizado" : "Bloqueado"}
+                    </Badge>
+                  </td>
+                </tr>
               ))}
-            </div>
-          )}
-        </CardContent>
+            </tbody>
+          </table>
+        )}
       </Card>
 
-      {/* DIALOG DETALLE + MOVER + SALIR */}
-      <VehicleDialog
-        vehicle={selected}
-        blocks={blocks}
-        onClose={() => setSelected(null)}
-        onMove={(blockId) => selected && moveVehicle(selected, blockId)}
-        onExit={() => selected && registerExit(selected)}
-      />
+      {/* MODAL DETALLE + MOVER + SALIR */}
+      {selected && (
+        <VehicleDialog
+          vehicle={selected}
+          blocks={blocks}
+          onClose={() => setSelected(null)}
+          onMove={(blockId) => selected && moveVehicle(selected, blockId)}
+          onExit={() => selected && registerExit(selected)}
+        />
+      )}
     </div>
-  );
-}
-
-function BlockChip({
-  name,
-  count,
-  capacity,
-  isActive,
-  isDefault,
-  onClick,
-}: {
-  name: string;
-  count: number;
-  capacity: number;
-  isActive: boolean;
-  isDefault?: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "rounded-lg border p-3 text-left transition-all",
-        isActive
-          ? "border-primary bg-primary/10 ring-2 ring-primary/30"
-          : "border-border bg-card hover:border-primary/40 hover:bg-accent"
-      )}
-    >
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span className="truncate">{name}</span>
-        {isDefault && <Star className="size-3 text-primary shrink-0" />}
-      </div>
-      <div className="text-2xl font-bold tabular-nums mt-0.5">
-        {count}
-        {capacity > 0 && <span className="text-muted-foreground text-sm"> / {capacity}</span>}
-      </div>
-    </button>
-  );
-}
-
-function VehicleRow({ vehicle, onClick }: { vehicle: Vehicle; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:border-primary/40 hover:bg-accent/40"
-    >
-      <div className="size-10 rounded-md bg-primary/10 text-primary grid place-items-center shrink-0">
-        <Car className="size-5" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-mono font-bold">{vehicle.plate}</span>
-          {vehicle.currentBlock && (
-            <Badge variant="outline" className="text-[10px] py-0 px-1.5">
-              {vehicle.currentBlock.name}
-            </Badge>
-          )}
-        </div>
-        <div className="text-xs text-muted-foreground truncate">
-          {vehicle.owner.name}
-          {vehicle.owner.universityId && (
-            <span className="font-mono"> · {vehicle.owner.universityId}</span>
-          )}
-        </div>
-      </div>
-      {!vehicle.authorized && (
-        <Badge variant="destructive" className="text-[10px]">
-          BLOQ
-        </Badge>
-      )}
-    </button>
   );
 }
 
@@ -368,7 +281,7 @@ function VehicleDialog({
   onMove,
   onExit,
 }: {
-  vehicle: Vehicle | null;
+  vehicle: Vehicle;
   blocks: Block[];
   onClose: () => void;
   onMove: (blockId: string) => void;
@@ -380,94 +293,73 @@ function VehicleDialog({
   }, [vehicle]);
 
   return (
-    <Dialog open={!!vehicle} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-md">
-        {vehicle && (
-          <>
-            <DialogHeader>
-              <DialogTitle className="font-mono text-3xl tracking-tight">
-                {vehicle.plate}
-              </DialogTitle>
-              <DialogDescription>
-                {[vehicle.make, vehicle.model].filter(Boolean).join(" ") || "—"}
-                {vehicle.color ? ` · ${vehicle.color}` : ""}
-              </DialogDescription>
-            </DialogHeader>
+    <Modal title="Detalle del vehículo" onClose={onClose}>
+      <div style={{ marginBottom: 12 }}>
+        <Plate size="lg">{vehicle.plate}</Plate>
+        <div className="muted" style={{ fontSize: 13, marginTop: 6 }}>
+          {[vehicle.make, vehicle.model].filter(Boolean).join(" ") || "—"}
+          {vehicle.color ? ` · ${vehicle.color}` : ""}
+        </div>
+      </div>
 
-            <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
-              <div className="flex items-center gap-2">
-                <UserIcon className="size-4 text-muted-foreground" />
-                <div className="flex-1">
-                  <p className="font-medium">{vehicle.owner.name}</p>
-                  <p className="text-xs text-muted-foreground">{vehicle.owner.email}</p>
-                </div>
-                <Badge variant="outline">{vehicle.owner.role}</Badge>
-              </div>
-              {vehicle.owner.universityId && (
-                <>
-                  <Separator />
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Credencial U</span>
-                    <span className="font-mono">{vehicle.owner.universityId}</span>
-                  </div>
-                </>
-              )}
-              <Separator />
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Bloque actual</span>
-                <Badge variant="secondary">{vehicle.currentBlock?.name ?? "—"}</Badge>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Autorización</span>
-                <Badge variant={vehicle.authorized ? "success" : "destructive"}>
-                  {vehicle.authorized ? "Autorizado" : "Bloqueado"}
-                </Badge>
-              </div>
-            </div>
+      <Card pad="sm" style={{ marginBottom: 10 }}>
+        <div className="row" style={{ gap: 10, alignItems: "center" }}>
+          <I name="user" size={16} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 600 }}>{vehicle.owner.name}</div>
+            <div className="muted" style={{ fontSize: 12 }}>{vehicle.owner.email}</div>
+          </div>
+          <Badge kind="info">{vehicle.owner.role}</Badge>
+        </div>
+        <div className="row between" style={{ fontSize: 13, marginTop: 8 }}>
+          <span className="muted">Credencial U</span>
+          <span className="mono">{vehicle.owner.universityId ?? "—"}</span>
+        </div>
+        <div className="row between" style={{ fontSize: 13, marginTop: 6 }}>
+          <span className="muted">Bloque actual</span>
+          <Badge kind="info">{vehicle.currentBlock?.name ?? "—"}</Badge>
+        </div>
+        <div className="row between" style={{ fontSize: 13, marginTop: 6 }}>
+          <span className="muted">Autorización</span>
+          <Badge kind={vehicle.authorized ? "go" : "no"}>
+            {vehicle.authorized ? "Autorizado" : "Bloqueado"}
+          </Badge>
+        </div>
+      </Card>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Corregir bloque asignado
-                </p>
-                <Badge variant="outline" className="text-[10px]">
-                  Actual: {vehicle.currentBlock?.name ?? "—"}
-                </Badge>
-              </div>
-              <div className="flex gap-2">
-                <Select value={target} onValueChange={setTarget}>
-                  <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Seleccionar nuevo bloque…" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {blocks
-                      .filter((b) => b.id !== vehicle.currentBlock?.id)
-                      .map((b) => (
-                        <SelectItem key={b.id} value={b.id} disabled={b.free <= 0}>
-                          {b.name} · {b.free}/{b.capacity} libres
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-                <Button onClick={() => target && onMove(target)} disabled={!target}>
-                  <ArrowLeftRight />
-                  Reasignar
-                </Button>
-              </div>
-              <p className="text-[11px] text-muted-foreground">
-                Reasignar solo mueve el vehículo de bloque; no registra entrada ni salida adicional.
-              </p>
-            </div>
+      <div className="field" style={{ marginBottom: 12 }}>
+        <div className="row between" style={{ alignItems: "center" }}>
+          <label className="field-lbl">Corregir bloque asignado</label>
+          <Badge kind="info">Actual: {vehicle.currentBlock?.name ?? "—"}</Badge>
+        </div>
+        <div className="row" style={{ gap: 8 }}>
+          <select className="select" style={{ flex: 1 }} value={target} onChange={(e) => setTarget(e.target.value)}>
+            <option value="">Seleccionar nuevo bloque…</option>
+            {blocks
+              .filter((b) => b.id !== vehicle.currentBlock?.id)
+              .map((b) => (
+                <option key={b.id} value={b.id} disabled={b.free <= 0}>
+                  {b.name} · {b.free}/{b.capacity} libres
+                </option>
+              ))}
+          </select>
+          <button className="btn" onClick={() => target && onMove(target)} disabled={!target}>
+            <I name="arrowRight" size={16} />
+            Reasignar
+          </button>
+        </div>
+        <span className="field-hint">
+          Reasignar solo mueve el vehículo de bloque; no registra entrada ni salida adicional.
+        </span>
+      </div>
 
-            <DialogFooter>
-              <Button variant="destructive" onClick={onExit}>
-                <LogOut />
-                Registrar salida
-              </Button>
-            </DialogFooter>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
+      <div className="row between">
+        <button className="btn danger" onClick={onExit}>
+          <I name="logout" size={16} />
+          Registrar salida
+        </button>
+        <button className="btn ghost" onClick={onClose}>Cerrar</button>
+      </div>
+    </Modal>
   );
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { jsonError, withAuth } from "@/lib/api";
+import { verifyQrToken } from "@/lib/qr";
 
 /**
  * GET /api/access/lookup?plate=XXX
@@ -20,13 +21,14 @@ export const GET = withAuth(
         include: { owner: { select: { id: true, name: true, email: true, universityId: true } }, currentBlock: true },
       });
     } else if (qr) {
-      const parts = qr.split(":");
-      if (parts[0] === "sigte" && parts[1] === "v1" && parts[2]) {
-        vehicle = await prisma.vehicle.findUnique({
-          where: { id: parts[2] },
-          include: { owner: { select: { id: true, name: true, email: true, universityId: true } }, currentBlock: true },
-        });
+      const vResult = verifyQrToken(qr);
+      if (!vResult.ok) {
+        return NextResponse.json({ vehicle: null, qrError: vResult.error });
       }
+      vehicle = await prisma.vehicle.findUnique({
+        where: { id: vResult.vehicleId },
+        include: { owner: { select: { id: true, name: true, email: true, universityId: true } }, currentBlock: true },
+      });
     } else if (uid) {
       const owner = await prisma.user.findUnique({ where: { universityId: uid } });
       if (owner) {
@@ -37,7 +39,7 @@ export const GET = withAuth(
         });
       }
     } else {
-      return jsonError(400, "Indicá plate, qr o uid");
+      return jsonError(400, "Indica plate, qr o uid");
     }
 
     if (!vehicle) return NextResponse.json({ vehicle: null });

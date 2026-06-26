@@ -3,19 +3,15 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, Suspense } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { AlertCircle, Loader2, LogIn } from "lucide-react";
+import { I } from "@/components/Icon";
+import { Brand } from "@/components/ui-system";
+import st from "./login.module.css";
+
+const DEMO = [
+  { role: "Admin", email: "admin@usm.cl", pw: "admin123" },
+  { role: "Guardia", email: "guardia@usm.cl", pw: "guard123" },
+  { role: "Usuario", email: "user@usm.cl", pw: "user123" },
+] as const;
 
 function LoginForm() {
   const router = useRouter();
@@ -50,125 +46,165 @@ function LoginForm() {
     }
   }
 
-  function fillDemo(email: string, password: string) {
-    setEmail(email);
-    setPassword(password);
+  function fillDemo(demoEmail: string, demoPw: string) {
+    setEmail(demoEmail);
+    setPassword(demoPw);
   }
 
   return (
-    <>
-      <CardHeader>
-        <div className="flex items-center gap-3 mb-2">
-          <div className="size-10 rounded-md bg-primary text-primary-foreground grid place-items-center font-bold">
-            S
-          </div>
-          <div>
-            <CardTitle>Iniciar sesión</CardTitle>
-            <CardDescription className="text-[11px] uppercase tracking-[0.2em]">
-              S.I.G.T.E.
-            </CardDescription>
-          </div>
+    <form onSubmit={submit} className="col" style={{ gap: 14, textAlign: "left" }}>
+      <div className="field">
+        <label className="field-lbl" htmlFor="email">Correo institucional</label>
+        <input
+          id="email"
+          className="input"
+          type="email"
+          required
+          placeholder="nombre.apellido@usm.cl"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
+          autoFocus
+        />
+      </div>
+      <div className="field">
+        <label className="field-lbl" htmlFor="password">Contraseña</label>
+        <input
+          id="password"
+          className="input"
+          type="password"
+          required
+          placeholder="••••••••"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
+        />
+        <span className="field-hint">Credenciales entregadas por administración.</span>
+      </div>
+
+      {error && (
+        <div className="field-err">
+          <I name="alert" size={14} /> {error}
         </div>
-      </CardHeader>
-      <form onSubmit={submit}>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              placeholder="admin@sigte.cl"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Contraseña</Label>
-            <Input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              placeholder="••••••••"
-            />
-          </div>
+      )}
 
-          {error && (
-            <div className="flex gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              <AlertCircle className="size-4 shrink-0 mt-0.5" />
-              <span>{error}</span>
-            </div>
-          )}
+      <button className="btn primary lg block" type="submit" disabled={loading || !email || !password}>
+        <I name="login" size={19} /> {loading ? "Ingresando…" : "Ingresar"}
+      </button>
 
-          <Button type="submit" disabled={loading} className="w-full">
-            {loading ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              <>
-                <LogIn />
-                Ingresar
-              </>
-            )}
-          </Button>
+      <p style={{ fontSize: 13, color: "var(--ink-500)", textAlign: "center", margin: 0 }}>
+        ¿No tienes cuenta?{" "}
+        <Link href="/register" style={{ color: "var(--accent)", fontWeight: 600 }}>
+          Regístrate
+        </Link>
+      </p>
 
-          <p className="text-xs text-muted-foreground text-center">
-            ¿No tenés cuenta?{" "}
-            <Link href="/register" className="text-primary hover:underline">
-              Registrate
-            </Link>
-          </p>
-        </CardContent>
-      </form>
-      <Separator />
-      <CardFooter className="flex-col items-stretch pt-0">
-        <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mb-2">
+      <div className="card pad-sm" style={{ marginTop: 4 }}>
+        <p
+          style={{
+            fontFamily: "var(--ff-mono)",
+            fontSize: 11,
+            letterSpacing: ".15em",
+            textTransform: "uppercase",
+            color: "var(--ink-400)",
+            margin: "0 0 8px",
+          }}
+        >
           Credenciales demo
         </p>
-        <div className="grid gap-1.5 text-xs">
-          <DemoRow role="Admin" email="admin@sigte.cl" pw="admin123" onClick={fillDemo} />
-          <DemoRow role="Guardia" email="guardia@sigte.cl" pw="guard123" onClick={fillDemo} />
-          <DemoRow role="Usuario" email="user@sigte.cl" pw="user123" onClick={fillDemo} />
+        <div style={{ display: "grid", gap: 6 }}>
+          {DEMO.map((d) => (
+            <button
+              key={d.role}
+              type="button"
+              onClick={() => fillDemo(d.email, d.pw)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 10,
+                border: "1px solid var(--line)",
+                borderRadius: 8,
+                background: "var(--surface)",
+                padding: "8px 11px",
+                cursor: "pointer",
+                fontFamily: "var(--ff-body)",
+                fontSize: 12.5,
+                textAlign: "left",
+              }}
+            >
+              <span style={{ fontWeight: 600, color: "var(--ink-900)" }}>{d.role}</span>
+              <span style={{ fontFamily: "var(--ff-mono)", color: "var(--ink-500)" }}>{d.email}</span>
+            </button>
+          ))}
         </div>
-      </CardFooter>
-    </>
-  );
-}
-
-function DemoRow({
-  role,
-  email,
-  pw,
-  onClick,
-}: {
-  role: string;
-  email: string;
-  pw: string;
-  onClick: (email: string, pw: string) => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={() => onClick(email, pw)}
-      className="flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-accent text-left transition-colors"
-    >
-      <span className="font-medium">{role}</span>
-      <span className="text-muted-foreground font-mono">{email}</span>
-    </button>
+      </div>
+    </form>
   );
 }
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen grid place-items-center p-6 bg-background grain">
-      <Card className="w-full max-w-sm">
-        <Suspense fallback={<CardHeader><CardTitle>Cargando...</CardTitle></CardHeader>}>
-          <LoginForm />
-        </Suspense>
-      </Card>
-    </main>
+    <div className={st.split}>
+      <div className={st.formSide}>
+        <div className={st.formInner}>
+          <div style={{ textAlign: "left", marginBottom: 18 }}>
+            <Link
+              href="/"
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--ink-500)" }}
+            >
+              <I name="chevronLeft" size={16} /> Volver al inicio
+            </Link>
+          </div>
+          <div style={{ display: "inline-flex", marginBottom: 28 }}>
+            <Brand />
+          </div>
+          <h1 style={{ fontSize: 26, marginBottom: 8 }}>Bienvenido a S.I.G.T.E</h1>
+          <p style={{ color: "var(--ink-500)", fontSize: 14, marginBottom: 24 }}>
+            Ingresa con tu cuenta institucional de la Universidad Técnica Federico Santa María. Administración y
+            guardia van al panel; conductores, al portal.
+          </p>
+          <Suspense fallback={<p className="muted" style={{ fontSize: 13 }}>Cargando…</p>}>
+            <LoginForm />
+          </Suspense>
+        </div>
+      </div>
+      <div className={st.aside}>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: "radial-gradient(circle at 1px 1px,rgba(255,255,255,.1) 1px,transparent 0)",
+            backgroundSize: "22px 22px",
+            opacity: 0.6,
+          }}
+        />
+        <div style={{ position: "relative", color: "#fff", textAlign: "center", padding: 40 }}>
+          <div
+            style={{
+              fontFamily: "var(--ff-mono)",
+              fontSize: 11,
+              letterSpacing: ".18em",
+              color: "var(--usm-amarillo)",
+              marginBottom: 14,
+            }}
+          >
+            CONTROL DE ACCESO AL CAMPUS
+          </div>
+          <div
+            style={{
+              fontFamily: "var(--ff-display)",
+              fontWeight: 700,
+              fontSize: 34,
+              lineHeight: 1.1,
+              maxWidth: "14ch",
+              margin: "0 auto",
+            }}
+          >
+            Cada patente, cada acceso, en un solo lugar.
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

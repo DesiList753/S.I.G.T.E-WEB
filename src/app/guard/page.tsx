@@ -3,41 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import {
-  AlertTriangle,
-  Camera,
-  CreditCard,
-  Eye,
-  Layers,
-  LogIn,
-  LogOut,
-  MapPin,
-  QrCode,
-  Search,
-  ShieldCheck,
-  ShieldX,
-  Star,
-} from "lucide-react";
+import { Card, Plate, Badge, Metric } from "@/components/ui-system";
+import { I } from "@/components/Icon";
 
 type Vehicle = {
   id: string;
@@ -58,7 +25,7 @@ type Block = {
   isDefault: boolean;
 };
 type Totals = { inside: number; capacity: number; free: number; defaultBlockId: string | null };
-type LookupResponse = { vehicle: Vehicle | null; openInfractions?: number };
+type LookupResponse = { vehicle: Vehicle | null; openInfractions?: number; qrError?: "invalido" | "expirado" };
 
 export default function GuardAccess() {
   const [mode, setMode] = useState<"plate" | "qr" | "uid">("plate");
@@ -85,7 +52,9 @@ export default function GuardAccess() {
       `/api/access/lookup?${mode}=${encodeURIComponent(query.trim())}`
     ).then((r) => r.json());
     setResult(r);
-    if (!r.vehicle) toast.error("Vehículo no encontrado en el sistema");
+    if (r.qrError === "expirado") toast.error("QR expirado (válido por 5 minutos)");
+    else if (r.qrError === "invalido") toast.error("QR inválido o falsificado");
+    else if (!r.vehicle) toast.error("Vehículo no encontrado en el sistema");
   }
 
   async function register(direction: "IN" | "OUT") {
@@ -106,6 +75,7 @@ export default function GuardAccess() {
       if (!r.ok) {
         toast.error(data.error ?? "Error al registrar");
       } else {
+        if (data.warning) toast.warning(data.warning);
         toast.success(direction === "IN" ? "Ingreso registrado" : "Salida registrada");
         setQuery("");
         setResult(null);
@@ -121,119 +91,106 @@ export default function GuardAccess() {
     ? Math.round((totals.inside / totals.capacity) * 100)
     : 0;
 
+  const MODES: { id: typeof mode; label: string; icon: string }[] = [
+    { id: "plate", label: "Patente", icon: "camera" },
+    { id: "qr", label: "QR", icon: "qr" },
+    { id: "uid", label: "U-Card", icon: "idcard" },
+  ];
+
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
+    <div style={{ padding: 24 }}>
+      <div className="row between" style={{ marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Control de acceso</h1>
-          <p className="text-muted-foreground text-sm">
+          <h1 style={{ fontFamily: "var(--ff-display)", fontSize: 24 }}>Control de acceso</h1>
+          <p className="muted" style={{ fontSize: 13 }}>
             Validación por patente, código QR o credencial universitaria
           </p>
         </div>
-        <Button asChild variant="outline">
-          <Link href="/guard/occupancy">
-            <Eye />
-            Ver estacionamiento en vivo
-          </Link>
-        </Button>
-      </header>
+        <Link href="/guard/occupancy" className="btn ghost">
+          <I name="eye" size={16} />
+          Ver estacionamiento en vivo
+        </Link>
+      </div>
 
       {/* CUENTA GENERAL en vivo */}
       {totals && (
-        <Card className="border-primary/40 bg-gradient-to-br from-primary/5 to-transparent">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardDescription className="uppercase tracking-wider text-xs">
-                Vehículos dentro · tiempo real
-              </CardDescription>
-              <Layers className="size-4 text-primary" />
-            </div>
-            <div className="flex items-end gap-3">
-              <div className="text-4xl font-bold tabular-nums">{totals.inside}</div>
-              <div className="pb-1.5">
-                <div className="text-muted-foreground text-sm">
-                  de <span className="text-foreground font-medium">{totals.capacity}</span>
-                  <span className="text-[hsl(var(--success))] ml-2">· {totals.free} libres</span>
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <Progress value={pctGlobal} />
-          </CardContent>
-        </Card>
+        <div className="row" style={{ gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
+          <div style={{ flex: 1, minWidth: 180 }}>
+            <Metric
+              label="Vehículos dentro · tiempo real"
+              icon="parking"
+              value={totals.inside}
+              sub={`de ${totals.capacity} · ${pctGlobal}% ocupación`}
+            />
+          </div>
+          <div style={{ flex: 1, minWidth: 180 }}>
+            <Metric label="Cupos libres" icon="check" value={totals.free} sub="disponibles ahora" />
+          </div>
+          <div style={{ flex: 1, minWidth: 180 }}>
+            <Metric label="Capacidad total" icon="barrier" value={totals.capacity} sub="suma de bloques" />
+          </div>
+        </div>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Identificar vehículo</CardTitle>
-          <CardDescription>Elegí el método y escaneá / ingresá el valor</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Tabs
-            value={mode}
-            onValueChange={(v) => {
-              setMode(v as typeof mode);
-              setResult(null);
-              setQuery("");
-            }}
-          >
-            <TabsList className="grid w-full grid-cols-3 md:w-fit">
-              <TabsTrigger value="plate">
-                <Camera />
-                Patente
-              </TabsTrigger>
-              <TabsTrigger value="qr">
-                <QrCode />
-                QR
-              </TabsTrigger>
-              <TabsTrigger value="uid">
-                <CreditCard />
-                U-Card
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+      <Card title="Identificar vehículo">
+        <p className="muted" style={{ fontSize: 13, marginBottom: 14 }}>
+          Elige el método y escanea / ingresa el valor
+        </p>
 
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input
-                className="pl-9 font-mono"
-                placeholder={
-                  mode === "plate"
-                    ? "AABB12"
-                    : mode === "qr"
-                    ? "sigte:v1:..."
-                    : "USR-2026-123"
-                }
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && lookup()}
-              />
-            </div>
-            <Button onClick={lookup}>
-              <Search />
-              Buscar
-            </Button>
+        <div className="row" style={{ gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+          {MODES.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              className={"btn " + (mode === m.id ? "primary" : "ghost")}
+              onClick={() => {
+                setMode(m.id);
+                setResult(null);
+                setQuery("");
+              }}
+            >
+              <I name={m.icon} size={16} />
+              {m.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+          <div className="searchbox" style={{ flex: 1, minWidth: 220 }}>
+            <I name="search" size={17} />
+            <input
+              className="input mono"
+              placeholder={
+                mode === "plate"
+                  ? "AABB12"
+                  : mode === "qr"
+                  ? "sigte:v1:..."
+                  : "USR-2026-123"
+              }
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && lookup()}
+            />
           </div>
+          <button className="btn primary" onClick={lookup}>
+            <I name="search" size={16} />
+            Buscar
+          </button>
+        </div>
 
-          {result?.vehicle && (
-            <>
-              <Separator />
-              <VehicleCard
-                vehicle={result.vehicle}
-                openInfractions={result.openInfractions ?? 0}
-                blocks={blocks}
-                defaultBlock={defaultBlock}
-                selectedBlock={selectedBlock}
-                onBlockChange={setSelectedBlock}
-                busy={busy}
-                onIn={() => register("IN")}
-                onOut={() => register("OUT")}
-              />
-            </>
-          )}
-        </CardContent>
+        {result?.vehicle && (
+          <VehicleCard
+            vehicle={result.vehicle}
+            openInfractions={result.openInfractions ?? 0}
+            blocks={blocks}
+            defaultBlock={defaultBlock}
+            selectedBlock={selectedBlock}
+            onBlockChange={setSelectedBlock}
+            busy={busy}
+            onIn={() => register("IN")}
+            onOut={() => register("OUT")}
+          />
+        )}
       </Card>
     </div>
   );
@@ -261,99 +218,84 @@ function VehicleCard({
   onOut: () => void;
 }) {
   return (
-    <div className="rounded-xl border bg-card/50 p-5 space-y-4">
-      <div className="flex items-start justify-between flex-wrap gap-3">
+    <Card pad="sm" style={{ marginTop: 16 }}>
+      <div className="row between" style={{ alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
         <div>
-          <p className="font-mono text-3xl font-bold tracking-tight">{vehicle.plate}</p>
-          <p className="text-sm text-muted-foreground mt-1">
+          <Plate size="lg">{vehicle.plate}</Plate>
+          <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
             {[vehicle.make, vehicle.model].filter(Boolean).join(" ") || "—"}
             {vehicle.color ? ` · ${vehicle.color}` : ""}
           </p>
-          <p className="text-sm mt-2">
-            <span className="text-muted-foreground">Dueño: </span>
-            <span className="font-medium">{vehicle.owner.name}</span>
+          <p style={{ fontSize: 13, marginTop: 8 }}>
+            <span className="muted">Dueño: </span>
+            <span style={{ fontWeight: 600 }}>{vehicle.owner.name}</span>
             {vehicle.owner.universityId && (
-              <span className="ml-2 font-mono text-xs text-muted-foreground">
+              <span className="mono muted" style={{ marginLeft: 8, fontSize: 12 }}>
                 ({vehicle.owner.universityId})
               </span>
             )}
           </p>
         </div>
-        <div className="flex flex-wrap justify-end gap-1.5">
-          <Badge variant={vehicle.authorized ? "success" : "destructive"} className="gap-1">
-            {vehicle.authorized ? <ShieldCheck className="size-3" /> : <ShieldX className="size-3" />}
+        <div className="row" style={{ gap: 6, justifyContent: "flex-end", flexWrap: "wrap" }}>
+          <Badge kind={vehicle.authorized ? "go" : "no"}>
             {vehicle.authorized ? "AUTORIZADO" : "BLOQUEADO"}
           </Badge>
-          {vehicle.currentBlock && (
-            <Badge variant="secondary" className="gap-1">
-              <MapPin className="size-3" />
-              {vehicle.currentBlock.name}
-            </Badge>
-          )}
+          {vehicle.currentBlock && <Badge kind="info">{vehicle.currentBlock.name}</Badge>}
           {openInfractions > 0 && (
-            <Badge variant="warning" className="gap-1">
-              <AlertTriangle className="size-3" />
-              {openInfractions} infracción(es)
-            </Badge>
+            <Badge kind="wait">{openInfractions} infracción(es)</Badge>
           )}
         </div>
       </div>
 
       {!vehicle.currentBlock && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Bloque a asignar (opcional)
-            </p>
+        <div className="field" style={{ marginTop: 14 }}>
+          <div className="row between" style={{ alignItems: "center" }}>
+            <label className="field-lbl">Bloque a asignar (opcional)</label>
             {defaultBlock && (
-              <Badge variant="outline" className="gap-1 text-[10px]">
-                <Star className="size-3 text-primary" />
-                Default: {defaultBlock.name}
-              </Badge>
+              <Badge kind="info">Default: {defaultBlock.name}</Badge>
             )}
           </div>
-          <Select value={selectedBlock} onValueChange={onBlockChange}>
-            <SelectTrigger>
-              <SelectValue placeholder={`Usar default (${defaultBlock?.name ?? "No definido"})`} />
-            </SelectTrigger>
-            <SelectContent>
-              {blocks.map((b) => (
-                <SelectItem key={b.id} value={b.id} disabled={b.free <= 0}>
-                  {b.isDefault && "⭐ "}
-                  {b.name} · {b.free}/{b.capacity} libres
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-[11px] text-muted-foreground">
-            Si no elegís un bloque, el vehículo queda en{" "}
-            <span className="text-foreground">{defaultBlock?.name ?? "el bloque default"}</span> y
-            lo podés mover luego desde "Estacionamiento en vivo".
-          </p>
+          <select
+            className="select"
+            value={selectedBlock}
+            onChange={(e) => onBlockChange(e.target.value)}
+          >
+            <option value="">Usar default ({defaultBlock?.name ?? "No definido"})</option>
+            {blocks.map((b) => (
+              <option key={b.id} value={b.id} disabled={b.free <= 0}>
+                {b.isDefault ? "⭐ " : ""}
+                {b.name} · {b.free}/{b.capacity} libres
+              </option>
+            ))}
+          </select>
+          <span className="field-hint">
+            Si no eliges un bloque, el vehículo queda en{" "}
+            {defaultBlock?.name ?? "el bloque default"} y lo puedes mover luego desde
+            "Estacionamiento en vivo".
+          </span>
         </div>
       )}
 
-      <div className="flex gap-2">
-        <Button
+      <div className="row" style={{ gap: 8, marginTop: 14 }}>
+        <button
+          className="btn primary lg"
+          style={{ flex: 1 }}
           onClick={onIn}
           disabled={busy || !vehicle.authorized || !!vehicle.currentBlock}
-          className="flex-1"
-          size="lg"
         >
-          <LogIn />
+          <I name="login" size={18} />
           Registrar ingreso
-        </Button>
-        <Button
+        </button>
+        <button
+          className="btn lg"
+          style={{ flex: 1 }}
           onClick={onOut}
           disabled={busy || !vehicle.currentBlock}
-          variant="outline"
-          className="flex-1"
-          size="lg"
         >
-          <LogOut />
+          <I name="logout" size={18} />
           Registrar salida
-        </Button>
+        </button>
       </div>
-    </div>
+    </Card>
   );
 }

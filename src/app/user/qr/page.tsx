@@ -1,25 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { Loader2, QrCode, Timer } from "lucide-react";
+import { Card, Plate } from "@/components/ui-system";
+import { I } from "@/components/Icon";
 
 type Vehicle = { id: string; plate: string };
 type QRData = { token: string; dataUrl: string; vehicle: Vehicle; expiresAt: number };
@@ -66,75 +49,83 @@ export default function UserQR() {
   const pct = qr ? Math.round((secondsLeft / (TTL_MS / 1000)) * 100) : 0;
 
   return (
-    <div className="space-y-6 max-w-xl">
-      <header>
-        <h1 className="text-3xl font-bold tracking-tight">Mi código QR de acceso</h1>
-        <p className="text-muted-foreground text-sm">
-          Generá un QR único por vehículo. Válido 5 minutos.
+    <div style={{ display: "grid", gap: 20 }}>
+      <div>
+        <h1 style={{ fontFamily: "var(--ff-display)", fontSize: 24 }}>Mi código QR de acceso</h1>
+        <p className="muted" style={{ fontSize: 13 }}>
+          Genera un QR único por vehículo. Válido 5 minutos.
         </p>
-      </header>
+      </div>
 
       {vehicles.length === 0 ? (
         <Card>
-          <CardHeader>
-            <CardDescription>
-              Primero registrá un vehículo en la sección{" "}
-              <span className="text-foreground font-medium">Mis vehículos</span>.
-            </CardDescription>
-          </CardHeader>
+          <div className="muted" style={{ fontSize: 13 }}>
+            Primero registra un vehículo en la sección{" "}
+            <span style={{ color: "var(--ink-900)", fontWeight: 600 }}>Mis vehículos</span>.
+          </div>
         </Card>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <QrCode className="size-4 text-primary" />
-              Generar código
-            </CardTitle>
-            <CardDescription>Elegí el vehículo para el cual generarás el QR</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Vehículo</Label>
-              <Select value={selected} onValueChange={setSelected}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {vehicles.map((v) => (
-                    <SelectItem key={v.id} value={v.id}>
-                      {v.plate}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        <Card title="Generar código">
+          <div className="col" style={{ gap: 16 }}>
+            <div className="field">
+              <label className="field-lbl">Vehículo</label>
+              <select className="select" value={selected} onChange={(e) => setSelected(e.target.value)}>
+                {vehicles.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.plate}
+                  </option>
+                ))}
+              </select>
             </div>
-            <Button onClick={generate} disabled={loading || !selected} className="w-full" size="lg">
+
+            <button className="btn primary lg block" onClick={generate} disabled={loading || !selected}>
               {loading ? (
-                <Loader2 className="animate-spin" />
+                <I name="refresh" size={18} />
               ) : (
                 <>
-                  <QrCode />
+                  <I name="qr" size={18} />
                   Generar QR
                 </>
               )}
-            </Button>
+            </button>
 
             {qr && (
-              <div className="rounded-xl border bg-white p-6 flex flex-col items-center">
-                <img src={qr.dataUrl} alt="QR" className="w-64 h-64" />
-                <div className="mt-4 w-full space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Badge variant="outline" className="gap-1 text-slate-900 border-slate-300">
-                      <Timer className="size-3" />
+              <div
+                style={{
+                  border: "1px solid var(--line)",
+                  borderRadius: 12,
+                  background: "#fff",
+                  padding: 24,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={qr.dataUrl} alt="QR" style={{ width: 256, height: 256 }} />
+                <div style={{ marginTop: 16, width: "100%", display: "grid", gap: 8 }}>
+                  <div className="row between">
+                    <span className="row" style={{ gap: 6, alignItems: "center", fontSize: 13, fontWeight: 600 }}>
+                      <I name="clock" size={14} />
                       {secondsLeft}s restantes
-                    </Badge>
-                    <Badge className="bg-slate-900 text-white">{qr.vehicle.plate}</Badge>
+                    </span>
+                    <Plate size="sm">{qr.vehicle.plate}</Plate>
                   </div>
-                  <Progress value={pct} className="bg-slate-200 [&>div]:bg-primary" />
+                  <div style={{ height: 6, background: "var(--line)", borderRadius: 3, overflow: "hidden" }}>
+                    <div
+                      style={{
+                        height: "100%",
+                        width: Math.min(100, pct) + "%",
+                        background: "var(--usm-azul)",
+                        borderRadius: 3,
+                        transition: "width .5s linear",
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             )}
-          </CardContent>
+          </div>
         </Card>
       )}
     </div>

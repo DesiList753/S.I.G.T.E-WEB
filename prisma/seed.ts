@@ -48,23 +48,23 @@ async function main() {
   // ─── Usuarios ─────────────────────────────────────────────────────────────────
   const userDefs = [
     // Equipo
-    { email: "admin@sigte.cl",    password: "admin123", name: "Alejandro Vera Espinoza",     role: "ADMIN" as const, universityId: "ADM-0001" },
-    { email: "guardia@sigte.cl",  password: "guard123", name: "Carlos Guardia Soto",          role: "GUARD" as const, universityId: "GRD-0001" },
-    { email: "guardia2@sigte.cl", password: "guard123", name: "María Vigía Rojas",            role: "GUARD" as const, universityId: "GRD-0002" },
-    { email: "user@sigte.cl",     password: "user123",  name: "Juan Pablo González Astudillo",role: "USER"  as const, universityId: "USR-0001" },
-    { email: "pedro@sigte.cl",    password: "user123",  name: "Pedro Fernández Araya",        role: "USER"  as const, universityId: "USR-0002" },
-    { email: "jose@sigte.cl",     password: "user123",  name: "José Hidalgo Palacios",        role: "USER"  as const, universityId: "USR-0003" },
-    { email: "nicolas@sigte.cl",  password: "user123",  name: "Nicolás Sepúlveda Cabello",    role: "USER"  as const, universityId: "USR-0004" },
-    { email: "ismael@sigte.cl",   password: "user123",  name: "Ismael Galindo Acuña",         role: "USER"  as const, universityId: "USR-0005" },
+    { email: "admin@usm.cl",    password: "admin123", name: "Alejandro Vera Espinoza",     role: "ADMIN" as const, universityId: "ADM-0001" },
+    { email: "guardia@usm.cl",  password: "guard123", name: "Carlos Guardia Soto",          role: "GUARD" as const, universityId: "GRD-0001" },
+    { email: "guardia2@usm.cl", password: "guard123", name: "María Vigía Rojas",            role: "GUARD" as const, universityId: "GRD-0002" },
+    { email: "user@usm.cl",     password: "user123",  name: "Juan Pablo González Astudillo",role: "USER"  as const, universityId: "USR-0001" },
+    { email: "pedro@usm.cl",    password: "user123",  name: "Pedro Fernández Araya",        role: "USER"  as const, universityId: "USR-0002" },
+    { email: "jose@usm.cl",     password: "user123",  name: "José Hidalgo Palacios",        role: "USER"  as const, universityId: "USR-0003" },
+    { email: "nicolas@usm.cl",  password: "user123",  name: "Nicolás Sepúlveda Cabello",    role: "USER"  as const, universityId: "USR-0004" },
+    { email: "ismael@usm.cl",   password: "user123",  name: "Ismael Galindo Acuña",         role: "USER"  as const, universityId: "USR-0005" },
     // Estudiantes adicionales
-    { email: "andrea@sigte.cl",   password: "user123",  name: "Andrea López Contreras",       role: "USER"  as const, universityId: "USR-0006" },
-    { email: "diego@sigte.cl",    password: "user123",  name: "Diego Muñoz Reyes",             role: "USER"  as const, universityId: "USR-0007" },
-    { email: "camila@sigte.cl",   password: "user123",  name: "Camila Torres Vidal",           role: "USER"  as const, universityId: "USR-0008" },
-    { email: "rodrigo@sigte.cl",  password: "user123",  name: "Rodrigo Salinas Pino",          role: "USER"  as const, universityId: "USR-0009" },
-    { email: "valentina@sigte.cl",password: "user123",  name: "Valentina Rivas Moreno",        role: "USER"  as const, universityId: "USR-0010" },
-    { email: "matias@sigte.cl",   password: "user123",  name: "Matías Pérez Fuentes",          role: "USER"  as const, universityId: "USR-0011" },
-    { email: "barbara@sigte.cl",  password: "user123",  name: "Bárbara Castro Herrera",        role: "USER"  as const, universityId: "USR-0012" },
-    { email: "fernando@sigte.cl", password: "user123",  name: "Fernando Ortega Campos",        role: "USER"  as const, universityId: "USR-0013" },
+    { email: "andrea@usm.cl",   password: "user123",  name: "Andrea López Contreras",       role: "USER"  as const, universityId: "USR-0006" },
+    { email: "diego@usm.cl",    password: "user123",  name: "Diego Muñoz Reyes",             role: "USER"  as const, universityId: "USR-0007" },
+    { email: "camila@usm.cl",   password: "user123",  name: "Camila Torres Vidal",           role: "USER"  as const, universityId: "USR-0008" },
+    { email: "rodrigo@usm.cl",  password: "user123",  name: "Rodrigo Salinas Pino",          role: "USER"  as const, universityId: "USR-0009" },
+    { email: "valentina@usm.cl",password: "user123",  name: "Valentina Rivas Moreno",        role: "USER"  as const, universityId: "USR-0010" },
+    { email: "matias@usm.cl",   password: "user123",  name: "Matías Pérez Fuentes",          role: "USER"  as const, universityId: "USR-0011" },
+    { email: "barbara@usm.cl",  password: "user123",  name: "Bárbara Castro Herrera",        role: "USER"  as const, universityId: "USR-0012" },
+    { email: "fernando@usm.cl", password: "user123",  name: "Fernando Ortega Campos",        role: "USER"  as const, universityId: "USR-0013" },
   ];
 
   const uMap: Record<string, string> = {};
@@ -78,8 +78,8 @@ async function main() {
     uMap[u.email] = rec.id;
   }
 
-  const guard1 = uMap["guardia@sigte.cl"];
-  const guard2 = uMap["guardia2@sigte.cl"];
+  const guard1 = uMap["guardia@usm.cl"];
+  const guard2 = uMap["guardia2@usm.cl"];
 
   // ─── Vehículos ────────────────────────────────────────────────────────────────
   // plate, make, model, color, owner, authorized, currentBlock (null = outside)
@@ -88,36 +88,36 @@ async function main() {
     owner: string; authorized: boolean; block: string | null;
   }[] = [
     // Juan Pablo González (2 vehículos)
-    { plate: "AABB12", make: "Toyota",    model: "Yaris",      color: "Rojo",     owner: "user@sigte.cl",     authorized: true,  block: bC },
-    { plate: "CCDD34", make: "Chevrolet", model: "Sail",       color: "Azul",     owner: "user@sigte.cl",     authorized: true,  block: null },
+    { plate: "AABB12", make: "Toyota",    model: "Yaris",      color: "Rojo",     owner: "user@usm.cl",     authorized: true,  block: bC },
+    { plate: "CCDD34", make: "Chevrolet", model: "Sail",       color: "Azul",     owner: "user@usm.cl",     authorized: true,  block: null },
     // Pedro Fernández
-    { plate: "EEFF56", make: "Nissan",    model: "Versa",      color: "Blanco",   owner: "pedro@sigte.cl",    authorized: true,  block: bA },
+    { plate: "EEFF56", make: "Nissan",    model: "Versa",      color: "Blanco",   owner: "pedro@usm.cl",    authorized: true,  block: bA },
     // José Hidalgo
-    { plate: "GGHH78", make: "Hyundai",   model: "Accent",     color: "Negro",    owner: "jose@sigte.cl",     authorized: true,  block: bB },
+    { plate: "GGHH78", make: "Hyundai",   model: "Accent",     color: "Negro",    owner: "jose@usm.cl",     authorized: true,  block: bB },
     // Nicolás Sepúlveda
-    { plate: "JJKK90", make: "Kia",       model: "Rio",        color: "Gris",     owner: "nicolas@sigte.cl",  authorized: true,  block: bC },
+    { plate: "JJKK90", make: "Kia",       model: "Rio",        color: "Gris",     owner: "nicolas@usm.cl",  authorized: true,  block: bC },
     // Ismael Galindo
-    { plate: "LLMM21", make: "Suzuki",    model: "Baleno",     color: "Blanco",   owner: "ismael@sigte.cl",   authorized: true,  block: bA },
+    { plate: "LLMM21", make: "Suzuki",    model: "Baleno",     color: "Blanco",   owner: "ismael@usm.cl",   authorized: true,  block: bA },
     // Andrea López
-    { plate: "NNPP43", make: "Mazda",     model: "Mazda 2",    color: "Rojo",     owner: "andrea@sigte.cl",   authorized: true,  block: bC },
+    { plate: "NNPP43", make: "Mazda",     model: "Mazda 2",    color: "Rojo",     owner: "andrea@usm.cl",   authorized: true,  block: bC },
     // Diego Muñoz
-    { plate: "QQRR65", make: "Fiat",      model: "Cronos",     color: "Negro",    owner: "diego@sigte.cl",    authorized: true,  block: bB },
+    { plate: "QQRR65", make: "Fiat",      model: "Cronos",     color: "Negro",    owner: "diego@usm.cl",    authorized: true,  block: bB },
     // Camila Torres
-    { plate: "SSTT87", make: "Renault",   model: "Kwid",       color: "Blanco",   owner: "camila@sigte.cl",   authorized: true,  block: bD },
+    { plate: "SSTT87", make: "Renault",   model: "Kwid",       color: "Blanco",   owner: "camila@usm.cl",   authorized: true,  block: bD },
     // Rodrigo Salinas
-    { plate: "UUVV09", make: "Volkswagen",model: "Gol",        color: "Plateado", owner: "rodrigo@sigte.cl",  authorized: true,  block: bA },
+    { plate: "UUVV09", make: "Volkswagen",model: "Gol",        color: "Plateado", owner: "rodrigo@usm.cl",  authorized: true,  block: bA },
     // Valentina Rivas
-    { plate: "WWXX31", make: "Chevrolet", model: "Aveo",       color: "Azul",     owner: "valentina@sigte.cl",authorized: true,  block: bC },
+    { plate: "WWXX31", make: "Chevrolet", model: "Aveo",       color: "Azul",     owner: "valentina@usm.cl",authorized: true,  block: bC },
     // Matías Pérez
-    { plate: "YYZZ53", make: "Honda",     model: "Fit",        color: "Plateado", owner: "matias@sigte.cl",   authorized: true,  block: bD },
+    { plate: "YYZZ53", make: "Honda",     model: "Fit",        color: "Plateado", owner: "matias@usm.cl",   authorized: true,  block: bD },
     // Bárbara Castro
-    { plate: "BBCC75", make: "Kia",       model: "Morning",    color: "Blanco",   owner: "barbara@sigte.cl",  authorized: true,  block: bB },
+    { plate: "BBCC75", make: "Kia",       model: "Morning",    color: "Blanco",   owner: "barbara@usm.cl",  authorized: true,  block: bB },
     // Fernando Ortega
-    { plate: "DDEE97", make: "Toyota",    model: "Corolla",    color: "Gris",     owner: "fernando@sigte.cl", authorized: true,  block: bC },
+    { plate: "DDEE97", make: "Toyota",    model: "Corolla",    color: "Gris",     owner: "fernando@usm.cl", authorized: true,  block: bC },
     // Vehículo no autorizado (para demo de infracción)
-    { plate: "FFGG19", make: "Mitsubishi",model: "Lancer",     color: "Verde",    owner: "diego@sigte.cl",    authorized: false, block: null },
+    { plate: "FFGG19", make: "Mitsubishi",model: "Lancer",     color: "Verde",    owner: "diego@usm.cl",    authorized: false, block: null },
     // Vehículo extra Juan Pablo
-    { plate: "HHII41", make: "Peugeot",   model: "208",        color: "Blanco",   owner: "jose@sigte.cl",     authorized: true,  block: bD },
+    { plate: "HHII41", make: "Peugeot",   model: "208",        color: "Blanco",   owner: "jose@usm.cl",     authorized: true,  block: bD },
   ];
 
   const vMap: Record<string, string> = {};
@@ -235,56 +235,56 @@ async function main() {
 
   const infractions = [
     {
-      plate: "AABB12", guardEmail: "guardia@sigte.cl",
+      plate: "AABB12", guardEmail: "guardia@usm.cl",
       type: "DOUBLE_PARKING" as const,
       description: "Vehículo estacionado en doble fila frente a Bloque A, bloqueando salida",
       status: "OPEN" as const,
       daysAgo: 0,
     },
     {
-      plate: "GGHH78", guardEmail: "guardia2@sigte.cl",
+      plate: "GGHH78", guardEmail: "guardia2@usm.cl",
       type: "WRONG_BLOCK" as const,
       description: "Vehículo estacionado en sector de funcionarios sin autorización",
       status: "ACKNOWLEDGED" as const,
       daysAgo: 2,
     },
     {
-      plate: "FFGG19", guardEmail: "guardia@sigte.cl",
+      plate: "FFGG19", guardEmail: "guardia@usm.cl",
       type: "UNAUTHORIZED_ENTRY" as const,
       description: "Intento de ingreso con patente no registrada en el sistema",
       status: "RESOLVED" as const,
       daysAgo: 5,
     },
     {
-      plate: "QQRR65", guardEmail: "guardia@sigte.cl",
+      plate: "QQRR65", guardEmail: "guardia@usm.cl",
       type: "BLOCKING_ACCESS" as const,
       description: "Vehículo bloqueando rampa de acceso peatonal en Bloque B",
       status: "OPEN" as const,
       daysAgo: 1,
     },
     {
-      plate: "CCDD34", guardEmail: "guardia2@sigte.cl",
+      plate: "CCDD34", guardEmail: "guardia2@usm.cl",
       type: "EXPIRED_PERMIT" as const,
       description: "Permiso vehicular vencido desde hace 15 días — notificar al propietario",
       status: "ACKNOWLEDGED" as const,
       daysAgo: 4,
     },
     {
-      plate: "WWXX31", guardEmail: "guardia@sigte.cl",
+      plate: "WWXX31", guardEmail: "guardia@usm.cl",
       type: "SPEEDING" as const,
       description: "Vehículo circulando a velocidad excesiva en zona de peatones frente a biblioteca",
       status: "RESOLVED" as const,
       daysAgo: 8,
     },
     {
-      plate: "NNPP43", guardEmail: "guardia2@sigte.cl",
+      plate: "NNPP43", guardEmail: "guardia2@usm.cl",
       type: "WRONG_BLOCK" as const,
       description: "Vehículo ocupando lugar reservado sin credencial de acceso correspondiente",
       status: "DISMISSED" as const,
       daysAgo: 12,
     },
     {
-      plate: "EEFF56", guardEmail: "guardia@sigte.cl",
+      plate: "EEFF56", guardEmail: "guardia@usm.cl",
       type: "OTHER" as const,
       description: "Vehículo con alarma activada por más de 20 minutos — se notificó al dueño",
       status: "RESOLVED" as const,
@@ -314,16 +314,16 @@ async function main() {
   await prisma.notification.deleteMany({});
 
   const notifications = [
-    { email: "user@sigte.cl",      title: "Infracción registrada",         message: "Se registró una infracción (Doble fila) para tu vehículo AABB12. Por favor comunícate con Seguridad.", read: false },
-    { email: "user@sigte.cl",      title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada exitosamente. Podés generar tu QR de acceso desde el panel.", read: true },
-    { email: "pedro@sigte.cl",     title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada exitosamente. Podés generar tu QR de acceso desde el panel.", read: true },
-    { email: "jose@sigte.cl",      title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada exitosamente. Podés generar tu QR de acceso desde el panel.", read: true },
-    { email: "nicolas@sigte.cl",   title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada. Registrá tu vehículo para obtener tu código QR de acceso.", read: false },
-    { email: "ismael@sigte.cl",    title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada. Registrá tu vehículo para obtener tu código QR de acceso.", read: false },
+    { email: "user@usm.cl",      title: "Infracción registrada",         message: "Se registró una infracción (Doble fila) para tu vehículo AABB12. Por favor comunícate con Seguridad.", read: false },
+    { email: "user@usm.cl",      title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada exitosamente. Podés generar tu QR de acceso desde el panel.", read: true },
+    { email: "pedro@usm.cl",     title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada exitosamente. Podés generar tu QR de acceso desde el panel.", read: true },
+    { email: "jose@usm.cl",      title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada exitosamente. Podés generar tu QR de acceso desde el panel.", read: true },
+    { email: "nicolas@usm.cl",   title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada. Registrá tu vehículo para obtener tu código QR de acceso.", read: false },
+    { email: "ismael@usm.cl",    title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada. Registrá tu vehículo para obtener tu código QR de acceso.", read: false },
     { email: "gghh78@owner",       title: "Infracción — Bloque incorrecto", message: "Tu vehículo GGHH78 fue registrado en sector no autorizado. Estado: Notificado.", read: false },
     { email: "ccdd34@owner",       title: "Permiso próximo a vencer",       message: "El permiso de tu vehículo CCDD34 está vencido. Renovalo en Administración.", read: false },
-    { email: "andrea@sigte.cl",    title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada exitosamente. Podés generar tu QR de acceso desde el panel.", read: true },
-    { email: "diego@sigte.cl",     title: "Vehículo no autorizado",         message: "Se detectó un intento de ingreso con tu vehículo FFGG19 que no tiene autorización activa.", read: false },
+    { email: "andrea@usm.cl",    title: "Bienvenido a S.I.G.T.E.",       message: "Tu cuenta fue creada exitosamente. Podés generar tu QR de acceso desde el panel.", read: true },
+    { email: "diego@usm.cl",     title: "Vehículo no autorizado",         message: "Se detectó un intento de ingreso con tu vehículo FFGG19 que no tiene autorización activa.", read: false },
   ];
 
   // Solo insertamos notificaciones para emails que existen en uMap
@@ -334,19 +334,19 @@ async function main() {
     });
   }
 
-  // Notificación de infracción para dueño de GGHH78 (jose@sigte.cl)
+  // Notificación de infracción para dueño de GGHH78 (jose@usm.cl)
   await prisma.notification.create({
     data: {
-      userId: uMap["jose@sigte.cl"],
+      userId: uMap["jose@usm.cl"],
       title: "Infracción — Bloque incorrecto",
       message: "Tu vehículo GGHH78 fue registrado en sector no autorizado. Estado: Notificado.",
       read: false,
     },
   });
-  // Notificación para dueño de CCDD34 (user@sigte.cl)
+  // Notificación para dueño de CCDD34 (user@usm.cl)
   await prisma.notification.create({
     data: {
-      userId: uMap["user@sigte.cl"],
+      userId: uMap["user@usm.cl"],
       title: "Permiso próximo a vencer",
       message: "El permiso de tu vehículo CCDD34 está vencido. Renovalo en Administración.",
       read: false,

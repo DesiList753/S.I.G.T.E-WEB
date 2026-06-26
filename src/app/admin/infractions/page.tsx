@@ -2,23 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Plate, Badge } from "@/components/ui-system";
+import { I } from "@/components/Icon";
+import type { Estado } from "@/lib/design-data";
 import { formatDate } from "@/lib/utils";
 
 type Infraction = {
@@ -32,14 +18,11 @@ type Infraction = {
   guard: { id: string; name: string };
 };
 
-const STATUS_VARIANT: Record<
-  Infraction["status"],
-  "destructive" | "warning" | "success" | "outline"
-> = {
-  OPEN: "destructive",
-  ACKNOWLEDGED: "warning",
-  RESOLVED: "success",
-  DISMISSED: "outline",
+const STATUS_KIND: Record<Infraction["status"], Estado> = {
+  OPEN: "no",
+  ACKNOWLEDGED: "wait",
+  RESOLVED: "go",
+  DISMISSED: "neutral",
 };
 
 const STATUS_LABEL: Record<Infraction["status"], string> = {
@@ -48,6 +31,13 @@ const STATUS_LABEL: Record<Infraction["status"], string> = {
   RESOLVED: "Resuelta",
   DISMISSED: "Descartada",
 };
+
+const STATUS_OPTIONS: Infraction["status"][] = [
+  "OPEN",
+  "ACKNOWLEDGED",
+  "RESOLVED",
+  "DISMISSED",
+];
 
 export default function AdminInfractions() {
   const [items, setItems] = useState<Infraction[]>([]);
@@ -71,79 +61,85 @@ export default function AdminInfractions() {
     load();
   }
 
-  return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="text-3xl font-bold tracking-tight">Infracciones</h1>
-        <p className="text-muted-foreground text-sm">
-          Gestión del ciclo de fiscalización interna
-        </p>
-      </header>
+  const openCount = items.filter((i) => i.status === "OPEN").length;
 
-      <Card>
-        <CardContent className="pt-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Patente</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Descripción</TableHead>
-                <TableHead>Dueño</TableHead>
-                <TableHead>Guardia</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="w-[140px]">Cambiar</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.map((i) => (
-                <TableRow key={i.id}>
-                  <TableCell className="text-xs text-muted-foreground tabular-nums">
-                    {formatDate(i.createdAt)}
-                  </TableCell>
-                  <TableCell className="font-mono font-semibold">{i.vehicle.plate}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{i.type}</Badge>
-                  </TableCell>
-                  <TableCell className="max-w-xs truncate text-muted-foreground">
-                    {i.description}
-                  </TableCell>
-                  <TableCell>{i.user?.name ?? "—"}</TableCell>
-                  <TableCell className="text-muted-foreground">{i.guard.name}</TableCell>
-                  <TableCell>
-                    <Badge variant={STATUS_VARIANT[i.status]}>
-                      {STATUS_LABEL[i.status]}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Select
-                      value={i.status}
-                      onValueChange={(v: Infraction["status"]) => setStatus(i.id, v)}
-                    >
-                      <SelectTrigger size="sm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="OPEN">Abierta</SelectItem>
-                        <SelectItem value="ACKNOWLEDGED">Notificada</SelectItem>
-                        <SelectItem value="RESOLVED">Resuelta</SelectItem>
-                        <SelectItem value="DISMISSED">Descartada</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {items.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center py-6 text-muted-foreground">
+  return (
+    <div style={{ padding: 24 }}>
+      <h1 style={{ fontFamily: "var(--ff-display)", fontSize: 24 }}>Infracciones</h1>
+      <p className="muted" style={{ marginTop: 4 }}>
+        Gestión del ciclo de fiscalización interna
+      </p>
+
+      {openCount > 0 && (
+        <div className="callout danger" style={{ marginTop: 16 }}>
+          <I name="shieldAlert" size={18} />
+          <span>
+            Hay <strong>{openCount}</strong>{" "}
+            {openCount === 1 ? "infracción abierta" : "infracciones abiertas"} pendientes de
+            gestión.
+          </span>
+        </div>
+      )}
+
+      <div className="card" style={{ marginTop: 16, overflowX: "auto" }}>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Patente</th>
+              <th>Tipo</th>
+              <th>Descripción</th>
+              <th>Dueño</th>
+              <th>Guardia</th>
+              <th>Estado</th>
+              <th style={{ width: 160 }}>Cambiar</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((i) => (
+              <tr key={i.id}>
+                <td className="mono muted">{formatDate(i.createdAt)}</td>
+                <td>
+                  <Plate size="sm">{i.vehicle.plate}</Plate>
+                </td>
+                <td>{i.type}</td>
+                <td className="muted" style={{ maxWidth: 280 }}>
+                  {i.description}
+                </td>
+                <td>{i.user?.name ?? "—"}</td>
+                <td className="muted">{i.guard.name}</td>
+                <td>
+                  <Badge kind={STATUS_KIND[i.status]}>{STATUS_LABEL[i.status]}</Badge>
+                </td>
+                <td>
+                  <select
+                    className="select"
+                    value={i.status}
+                    onChange={(e) =>
+                      setStatus(i.id, e.target.value as Infraction["status"])
+                    }
+                  >
+                    {STATUS_OPTIONS.map((s) => (
+                      <option key={s} value={s}>
+                        {STATUS_LABEL[s]}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+              </tr>
+            ))}
+            {items.length === 0 && (
+              <tr>
+                <td colSpan={8}>
+                  <div className="muted" style={{ textAlign: "center", padding: "24px 0" }}>
                     Sin infracciones
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

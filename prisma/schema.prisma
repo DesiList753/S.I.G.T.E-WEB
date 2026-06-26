@@ -34,6 +34,7 @@ model User {
   guardLogs     AccessLog[]    @relation("GuardLogs")
   infractions   Infraction[]   @relation("UserInfractions")
   reportedInfractions Infraction[] @relation("GuardInfractions")
+  resolvedInfractions Infraction[] @relation("ResolvedInfractions")
 }
 
 // ─── Vehículos ───────────────────────────────────────────────────────────────
@@ -133,6 +134,25 @@ model Infraction {
   status      InfractionStatus @default(OPEN)
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
+
+  resolvedById String?
+  resolvedBy   User?            @relation("ResolvedInfractions", fields: [resolvedById], references: [id])
+  resolvedAt   DateTime?
+  resolution   String?
+  evidenceUrl  String?
+}
+
+// ─── Push tokens (Expo) ──────────────────────────────────────────────────────
+model PushToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  platform  String?
+  device    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 // ─── Notificaciones ──────────────────────────────────────────────────────────

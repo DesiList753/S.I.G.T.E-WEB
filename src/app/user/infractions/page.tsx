@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ShieldAlert, Smile } from "lucide-react";
+import { Card, Plate, Badge } from "@/components/ui-system";
+import { I } from "@/components/Icon";
 import { formatDate } from "@/lib/utils";
 
 type Infraction = {
@@ -16,14 +15,11 @@ type Infraction = {
   guard: { name: string };
 };
 
-const STATUS_VARIANT: Record<
-  Infraction["status"],
-  "destructive" | "warning" | "success" | "outline"
-> = {
-  OPEN: "destructive",
-  ACKNOWLEDGED: "warning",
-  RESOLVED: "success",
-  DISMISSED: "outline",
+const STATUS_KIND: Record<Infraction["status"], "go" | "no" | "wait" | "neutral"> = {
+  OPEN: "no",
+  ACKNOWLEDGED: "wait",
+  RESOLVED: "go",
+  DISMISSED: "neutral",
 };
 
 const STATUS_LABEL: Record<Infraction["status"], string> = {
@@ -35,55 +31,106 @@ const STATUS_LABEL: Record<Infraction["status"], string> = {
 
 export default function UserInfractions() {
   const [items, setItems] = useState<Infraction[]>([]);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
   useEffect(() => {
     fetch("/api/infractions")
       .then((r) => r.json())
       .then((d) => setItems(d.infractions ?? []));
   }, []);
 
+  async function acknowledge(id: string) {
+    setBusyId(id);
+    try {
+      const r = await fetch(`/api/infractions/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "ACKNOWLEDGED" }),
+      });
+      if (r.ok) {
+        setItems((prev) =>
+          prev.map((i) => (i.id === id ? { ...i, status: "ACKNOWLEDGED" } : i))
+        );
+      }
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  const openCount = items.filter((i) => i.status === "OPEN").length;
+
   return (
-    <div className="space-y-6">
+    <div style={{ display: "grid", gap: 16 }}>
       <header>
-        <h1 className="text-3xl font-bold tracking-tight">Mis infracciones</h1>
-        <p className="text-muted-foreground text-sm">Historial de fiscalización interna</p>
+        <h1 style={{ fontFamily: "var(--ff-display)", fontSize: 24 }}>Mis infracciones</h1>
+        <p className="muted">Historial de fiscalización interna</p>
       </header>
 
-      <div className="grid gap-3">
+      {openCount > 0 && (
+        <div className="callout warn row" style={{ gap: 10 }}>
+          <I name="shieldAlert" size={18} />
+          <span>
+            Tienes {openCount} {openCount === 1 ? "infracción abierta" : "infracciones abiertas"} que requieren tu atención.
+          </span>
+        </div>
+      )}
+
+      <div style={{ display: "grid", gap: 12 }}>
         {items.map((i) => (
-          <Card key={i.id} className="border-l-4 border-l-primary">
-            <CardHeader>
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3">
-                  <div className="size-10 rounded-md bg-destructive/10 text-destructive grid place-items-center">
-                    <ShieldAlert className="size-5" />
+          <Card key={i.id}>
+            <div className="row between" style={{ alignItems: "flex-start", gap: 12 }}>
+              <div className="row" style={{ alignItems: "flex-start", gap: 12 }}>
+                <span
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 8,
+                    display: "grid",
+                    placeItems: "center",
+                    background: "var(--accent-050)",
+                    color: "var(--accent-700)",
+                    flexShrink: 0,
+                  }}
+                >
+                  <I name="shieldAlert" size={20} />
+                </span>
+                <div>
+                  <div className="row" style={{ gap: 8, alignItems: "center" }}>
+                    <Plate size="sm">{i.vehicle.plate}</Plate>
+                    <span className="muted">·</span>
+                    <strong>{i.type}</strong>
                   </div>
-                  <div>
-                    <CardTitle className="font-mono tracking-tight">
-                      {i.vehicle.plate}
-                      <span className="mx-2 text-muted-foreground">·</span>
-                      <span className="text-primary">{i.type}</span>
-                    </CardTitle>
-                    <CardDescription className="mt-1">{i.description}</CardDescription>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Registrada por{" "}
-                      <span className="text-foreground">{i.guard.name}</span>
-                      {" · "}
-                      {formatDate(i.createdAt)}
-                    </p>
-                  </div>
+                  <p style={{ marginTop: 6 }}>{i.description}</p>
+                  <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
+                    Registrada por <span style={{ color: "var(--ink-900)" }}>{i.guard.name}</span>
+                    {" · "}
+                    <span className="mono">{formatDate(i.createdAt)}</span>
+                  </p>
                 </div>
-                <Badge variant={STATUS_VARIANT[i.status]}>{STATUS_LABEL[i.status]}</Badge>
               </div>
-            </CardHeader>
+              <Badge kind={STATUS_KIND[i.status]}>{STATUS_LABEL[i.status]}</Badge>
+            </div>
+            {i.status === "OPEN" && (
+              <div style={{ marginTop: 12 }}>
+                <button
+                  className="btn primary sm"
+                  onClick={() => acknowledge(i.id)}
+                  disabled={busyId === i.id}
+                >
+                  <I name="check" size={15} />
+                  Reconocer
+                </button>
+              </div>
+            )}
           </Card>
         ))}
         {items.length === 0 && (
           <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              <Smile className="mx-auto size-10 text-primary/60 mb-3" />
-              <p className="font-medium text-foreground">Sin infracciones</p>
-              <p className="text-sm">¡Bien hecho! Tu historial está limpio.</p>
-            </CardContent>
+            <div className="col center" style={{ padding: "48px 0", gap: 6, textAlign: "center" }}>
+              <I name="shieldCheck" size={40} style={{ color: "var(--ok-600)" }} />
+              <p style={{ fontWeight: 600 }}>Sin infracciones</p>
+              <p className="muted">¡Bien hecho! Tu historial está limpio.</p>
+            </div>
           </Card>
         )}
       </div>
