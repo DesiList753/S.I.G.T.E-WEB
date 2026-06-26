@@ -319,7 +319,7 @@ export default function AdminParking() {
                         <I name="car" size={16} />
                       </button>
                       {!b.isDefault && (
-                        <button className="btn ghost icon" title="Marcar como default" onClick={() => setDefault(b)}>
+                        <button className="btn ghost icon" title="Marcar como por defecto" onClick={() => setDefault(b)}>
                           <I name="check" size={16} />
                         </button>
                       )}

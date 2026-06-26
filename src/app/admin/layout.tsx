@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 const groups: PanelNavGroup[] = [
   { grp: "Administración", items: [
-    { href: "/admin", label: "Dashboard", icon: "dashboard" },
+    { href: "/admin", label: "Panel", icon: "dashboard" },
     { href: "/admin/users", label: "Usuarios", icon: "users" },
     { href: "/admin/vehicles", label: "Vehículos", icon: "car" },
     { href: "/admin/parking", label: "Bloques", icon: "parking" },

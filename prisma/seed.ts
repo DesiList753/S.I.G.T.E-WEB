@@ -3,10 +3,11 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-const BASE = new Date("2026-05-06T12:00:00.000Z");
+// La presentación es el 26 de Junio 2026 a las 12:00 CLT (15:00 UTC)
+const PRESENTACION = new Date("2026-06-26T15:00:00.000Z");
 
 function ago(days: number, h: number, m = 0): Date {
-  const d = new Date(BASE);
+  const d = new Date(PRESENTACION);
   d.setUTCDate(d.getUTCDate() - days);
   d.setUTCHours(h, m, 0, 0);
   return d;
@@ -134,100 +135,106 @@ async function main() {
   // ─── Logs de acceso ───────────────────────────────────────────────────────────
   await prisma.accessLog.deleteMany({});
 
-  // Vehículos con historial activo (los que están dentro o tuvieron actividad reciente)
-  const activeVehicles = [
-    "AABB12","CCDD34","EEFF56","GGHH78","JJKK90",
-    "LLMM21","NNPP43","QQRR65","SSTT87","UUVV09",
-    "WWXX31","YYZZ53","BBCC75","DDEE97","HHII41",
-  ];
+  // Todos los vehículos con historial activo (incluido FFGG19)
+  const activePlates = vehicleDefs.map(v => v.plate);
 
   const methods: Array<"PLATE" | "QR" | "CARD" | "MANUAL"> = ["PLATE","PLATE","PLATE","QR","QR","CARD","MANUAL"];
   const guardIds = [guard1, guard2];
+  function crearLog(vid: string, ownerId: string, dir: "IN" | "OUT", ts: Date, block: string, meth?: "PLATE" | "QR" | "CARD" | "MANUAL", auth = true, note?: string) {
+    return prisma.accessLog.create({
+      data: {
+        vehicleId: vid, userId: ownerId, guardId: pick(guardIds),
+        method: meth ?? pick(methods),
+        direction: dir, blockId: block,
+        timestamp: ts, authorized: auth, note,
+      },
+    });
+  }
 
-  // Días 1-29: pares IN/OUT completos (vehículos ya salieron)
-  for (const plate of activeVehicles) {
+  // ── Días 1-29: cada vehículo entra y sale casi todos los días ──
+  for (const plate of activePlates) {
     const vid = vMap[plate];
-    const uid = vehicleDefs.find(v => v.plate === plate)!;
-    const ownerId = uMap[uid.owner];
-    const assignedBlock = uid.block ?? bA;
+    const veh = vehicleDefs.find(v => v.plate === plate)!;
+    const ownerId = uMap[veh.owner];
+    const defaultBlock = veh.block ?? bA;
 
-    // Cada vehículo tiene actividad 3-5 veces por semana en los últimos 29 días
     for (let day = 29; day >= 1; day--) {
-      // Simula ~70% de días con actividad
-      if (Math.random() > 0.70) continue;
+      // Últimos 7 días: 98% de actividad; días anteriores: 80%
+      const prob = day <= 7 ? 0.98 : 0.80;
+      if (Math.random() > prob) continue;
 
-      const inHour  = pick([7,7,8,8,8,9]);
-      const inMin   = pick([15,20,30,35,40,45,50]);
-      const outHour = pick([17,17,18,18,19]);
-      const outMin  = pick([0,10,15,20,30,45]);
-      const method  = pick(methods);
-      const gid     = pick(guardIds);
+      const inHour  = pick([7,8,8,9]);
+      const inMin   = pick([0,10,15,20,25,30,35,40,45,50]);
+      const outHour = pick([16,17,17,18,18,19]);
+      const outMin  = pick([0,10,15,20,30,40,45,50]);
 
-      await prisma.accessLog.create({
-        data: {
-          vehicleId: vid,
-          userId: ownerId,
-          guardId: gid,
-          method,
-          direction: "IN",
-          blockId: assignedBlock,
-          timestamp: ago(day, inHour, inMin),
-          authorized: true,
-        },
-      });
-      await prisma.accessLog.create({
-        data: {
-          vehicleId: vid,
-          userId: ownerId,
-          guardId: gid,
-          method,
-          direction: "OUT",
-          blockId: assignedBlock,
-          timestamp: ago(day, outHour, outMin),
-          authorized: true,
-        },
-      });
+      await crearLog(vid, ownerId, "IN", ago(day, inHour, inMin), defaultBlock);
+
+      // 50% de los días: entrada extra al mediodía (para más volumen)
+      if (Math.random() < 0.5) {
+        await crearLog(vid, ownerId, "IN", ago(day, pick([12,13,14]), pick([0,15,30,45])), defaultBlock);
+      }
+
+      await crearLog(vid, ownerId, "OUT", ago(day, outHour, outMin), defaultBlock);
     }
   }
 
-  // Hoy (día 0): solo IN en la mañana — están dentro
+  // ── Hoy (día 0) y mañana (día -1) hasta las 12:00 ──
+  // Vehículos que están dentro
   const insideToday = vehicleDefs.filter(v => v.block !== null).map(v => v.plate);
   for (const plate of insideToday) {
     const vid = vMap[plate];
-    const uid = vehicleDefs.find(v => v.plate === plate)!;
-    const ownerId = uMap[uid.owner];
-    const blockId = uid.block!;
-    const inHour = pick([7,7,8,8,8,9]);
-    const inMin  = pick([0,15,20,30,35,40]);
-    await prisma.accessLog.create({
-      data: {
-        vehicleId: vid,
-        userId: ownerId,
-        guardId: pick(guardIds),
-        method: pick(methods),
-        direction: "IN",
-        blockId,
-        timestamp: ago(0, inHour, inMin),
-        authorized: true,
-      },
-    });
+    const veh = vehicleDefs.find(v => v.plate === plate)!;
+    const ownerId = uMap[veh.owner];
+    const blockId = veh.block!;
+
+    // Hoy temprano: algunos ya entraron
+    if (Math.random() < 0.7) {
+      await crearLog(vid, ownerId, "IN", ago(0, pick([7,7,8,8,8,9]), pick([0,10,15,20,25,30])), blockId);
+    }
+
+    // Mañana (presentación): entradas escalonadas 7:00-11:30
+    await crearLog(vid, ownerId, "IN", ago(-1, pick([7,7,8,8,8,9,10,10,11]), pick([0,10,15,20,25,30,35,40,45])), blockId);
   }
 
-  // Algunos accesos rechazados para mostrar en historial
-  for (let i = 0; i < 8; i++) {
-    const day = Math.floor(Math.random() * 20) + 1;
-    await prisma.accessLog.create({
-      data: {
-        vehicleId: vMap["FFGG19"],
-        guardId: pick(guardIds),
-        method: pick(["PLATE","MANUAL"] as Array<"PLATE"|"MANUAL">),
-        direction: "IN",
-        blockId: bA,
-        timestamp: ago(day, pick([8,9,10,14,15]), pick([0,15,30])),
-        authorized: false,
-        note: "Vehículo no autorizado — acceso denegado",
-      },
-    });
+  // Vehículos que aún no entran hoy: entran mañana
+  const outsideToday = vehicleDefs.filter(v => v.block === null).map(v => v.plate);
+  for (const plate of outsideToday) {
+    const vid = vMap[plate];
+    const veh = vehicleDefs.find(v => v.plate === plate)!;
+    const ownerId = uMap[veh.owner];
+    const blockId = veh.block ?? bA;
+
+    // Mañana entran
+    await crearLog(vid, ownerId, "IN", ago(-1, pick([8,8,9,9,10,10,11]), pick([0,10,15,20,25,30,35])), blockId);
+  }
+
+  // ── Accesos rechazados FFGG19 (distribuidos en últimos 14 días) ──
+  for (let i = 0; i < 12; i++) {
+    const day = Math.floor(Math.random() * 14);
+    await crearLog(
+      vMap["FFGG19"], uMap[vehicleDefs.find(v => v.plate === "FFGG19")!.owner],
+      "IN", ago(day, pick([8,9,10,14,15,16]), pick([0,15,30,45])),
+      bA, pick(["PLATE","MANUAL"] as const), false,
+      "Vehículo no autorizado — acceso denegado"
+    );
+  }
+
+  // ── Accesos de prueba adicionales para llenar métricas ──
+  // Tráfico peatonal simulado (ingresos sin vehículo asociado, solo conteo)
+  // Simulamos más accesos para que los totales se vean robustos
+  for (let day = 7; day >= 0; day--) {
+    const extraCount = pick([3, 4, 5, 6]);
+    for (let e = 0; e < extraCount; e++) {
+      const plate = pick(activePlates);
+      const veh = vehicleDefs.find(v => v.plate === plate)!;
+      // Solo IN en distintos horarios del día
+      await crearLog(
+        vMap[plate], uMap[veh.owner],
+        "IN", ago(day, pick([7,8,9,10,11,12,13,14,15,16,17,18]), pick([0,15,30,45])),
+        veh.block ?? bA, pick(methods)
+      );
+    }
   }
 
   // ─── Infracciones ─────────────────────────────────────────────────────────────
